@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-  workflow_dispatch: # 支持在远端网页随时一键唤醒执行
+  workflow_dispatch:
 
 jobs:
   build-and-verify-jdk8:
@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: '8'
-          distribution: 'temurin' # 选用最权威的 Eclipse Temurin OpenJDK 8 分发机
+          distribution: 'temurin'
           cache: maven
 
       - name: 🟢 1. 正统编译与单点验证：执行 BinaryUtils 纯手工转换工具
@@ -30,9 +30,15 @@ jobs:
           echo "==================== [ 2. 载入 JVM 主类推演二进制实态 ] ===================="
           java -cp binary-demo/target/classes com.zhiya.binary.BinaryUtils
 
-      - name: 🔵 2. 构建与压测验证：打磨 BitwiseBenchmark 基准测试工程
+      - name: 🔵 2. 构建与压测打包：编译 BitwiseBenchmark 基准测试包体
         run: |
           echo "==================== [ BitwiseBenchmark JDK 8 编译包体查验 ] ===================="
           cd benchmarks
           mvn clean package -DskipTests
           echo "✅ 基准压测独立镜像在 JDK 8 下构建成功！包体存放于: benchmarks/target/benchmarks.jar"
+
+      - name: 🟣 3. 终极验证：拉起 JMH 执行云端真实基准压测
+        run: |
+          echo "==================== [ 3. 启动 JMH 纳秒级跑分比对 ] ===================="
+          # 传递极速压测指令：-wi 1(预热1轮) -i 3(测量3轮) -f 1(独立分叉1次) -t 1(单线程)
+          java -jar benchmarks/target/benchmarks.jar -wi 1 -i 3 -f 1 -t 1
