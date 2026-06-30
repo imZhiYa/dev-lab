@@ -51,6 +51,12 @@ jobs:
           echo "==================== [ 2.5 载入 SnowflakeBitwiseGenerator 雪花算法 ID 合成 ] ===================="
           java -cp binary-demo/target/classes com.zhiya.binary.SnowflakeBitwiseGenerator
 
+          echo "==================== [ 2.6 载入 HyperLogLogBitwiseEstimator 亿级去重 ] ===================="
+          java -cp binary-demo/target/classes com.zhiya.binary.HyperLogLogBitwiseEstimator
+          
+          echo "==================== [ 2.7 载入 GeohashBitwiseSpatialIndex 空间交织寻址 ] ===================="
+          java -cp binary-demo/target/classes com.zhiya.binary.GeohashBitwiseSpatialIndex
+
       - name: 🟣 3. 基准沙盘打包：构建 BitwiseBenchmark 独立公审镜像
         run: |
           echo "==================== [ 3. 执行 Maven 打包构建 ] ===================="
