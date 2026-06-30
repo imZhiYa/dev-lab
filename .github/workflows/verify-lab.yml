@@ -1,0 +1,38 @@
+name: 🚀 dev-lab 闭门自查持续构建流水线 (JDK 8 生产纯享版)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch: # 支持在远端网页随时一键唤醒执行
+
+jobs:
+  build-and-verify-jdk8:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 拉取 dev-lab 完整源码
+        uses: actions/checkout@v3
+
+      - name: ☕ 设置 JDK 8 生产级云端验证环境
+        uses: actions/setup-java@v3
+        with:
+          java-version: '8'
+          distribution: 'temurin' # 选用最权威的 Eclipse Temurin OpenJDK 8 分发机
+          cache: maven
+
+      - name: 🟢 1. 正统编译与单点验证：执行 BinaryUtils 纯手工转换工具
+        run: |
+          echo "==================== [ 1. 执行 javac 原生字节码编译 ] ===================="
+          mkdir -p binary-demo/target/classes
+          javac -d binary-demo/target/classes binary-demo/src/main/java/com/zhiya/binary/BinaryUtils.java
+          
+          echo "==================== [ 2. 载入 JVM 主类推演二进制实态 ] ===================="
+          java -cp binary-demo/target/classes com.zhiya.binary.BinaryUtils
+
+      - name: 🔵 2. 构建与压测验证：打磨 BitwiseBenchmark 基准测试工程
+        run: |
+          echo "==================== [ BitwiseBenchmark JDK 8 编译包体查验 ] ===================="
+          cd benchmarks
+          mvn clean package -DskipTests
+          echo "✅ 基准压测独立镜像在 JDK 8 下构建成功！包体存放于: benchmarks/target/benchmarks.jar"
