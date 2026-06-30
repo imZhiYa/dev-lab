@@ -57,6 +57,9 @@ jobs:
           echo "==================== [ 2.7 载入 GeohashBitwiseSpatialIndex 空间交织寻址 ] ===================="
           java -cp binary-demo/target/classes com.zhiya.binary.GeohashBitwiseSpatialIndex
 
+          echo "==================== [ 2.8 载入 ConsistentHashBinaryRing 一致性哈希环 ] ===================="
+          java -cp binary-demo/target/classes com.zhiya.binary.ConsistentHashBinaryRing
+
       - name: 🟣 3. 基准沙盘打包：构建 BitwiseBenchmark 独立公审镜像
         run: |
           echo "==================== [ 3. 执行 Maven 打包构建 ] ===================="
