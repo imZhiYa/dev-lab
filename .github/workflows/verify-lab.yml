@@ -45,6 +45,12 @@ jobs:
           echo "==================== [ 2.3 载入 LeetCodeBitwiseClassics 力扣极客位操演示 ] ===================="
           java -cp binary-demo/target/classes com.zhiya.binary.LeetCodeBitwiseClassics
 
+          echo "==================== [ 2.4 载入 BloomFilterBitMapGuard 防穿透布隆大闸 ] ===================="
+          java -cp binary-demo/target/classes com.zhiya.binary.BloomFilterBitMapGuard
+          
+          echo "==================== [ 2.5 载入 SnowflakeBitwiseGenerator 雪花算法 ID 合成 ] ===================="
+          java -cp binary-demo/target/classes com.zhiya.binary.SnowflakeBitwiseGenerator
+
       - name: 🟣 3. 基准沙盘打包：构建 BitwiseBenchmark 独立公审镜像
         run: |
           echo "==================== [ 3. 执行 Maven 打包构建 ] ===================="
