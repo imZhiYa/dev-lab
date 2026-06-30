@@ -1,4 +1,4 @@
-name: 🚀 dev-lab 闭门自查持续构建流水线 (JDK 8 生产纯享版)
+name: 🚀 dev-lab 闭门自查持续构建流水线 (全量自动化终极免检版)
 
 on:
   push:
@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
+    inputs:
+      threads:
+        description: '指定 JMH 并发压测线程数 (支持网页端表单动态调配)'
+        required: true
+        default: '1'
 
 jobs:
   build-and-verify-jdk8:
@@ -21,24 +26,35 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: 🟢 1. 正统编译与单点验证：执行 BinaryUtils 纯手工转换工具
+      - name: 🟢 1. 动态寻址编译：一键联编 binary-demo 目录下所有 Java 源码
         run: |
-          echo "==================== [ 1. 执行 javac 原生字节码编译 ] ===================="
+          echo "==================== [ 1. 执行 javac 递归寻址字节码全量编译 ] ===================="
           mkdir -p binary-demo/target/classes
-          javac -d binary-demo/target/classes binary-demo/src/main/java/com/zhiya/binary/BinaryUtils.java
-          
-          echo "==================== [ 2. 载入 JVM 主类推演二进制实态 ] ===================="
-          java -cp binary-demo/target/classes com.zhiya.binary.BinaryUtils
+          # 核心大招：动态扫描寻址 binary-demo 目录下任意深度文件夹内的 .java 文件并实施合并编译
+          # 免除后续新增案例文件时修改配置文件的维护成本
+          find binary-demo -name "*.java" | xargs javac -d binary-demo/target/classes
 
-      - name: 🔵 2. 构建与压测打包：编译 BitwiseBenchmark 基准测试包体
+      - name: 🔵 2. 自动化公审：依次加载执行底座二进制实战类库
         run: |
-          echo "==================== [ BitwiseBenchmark JDK 8 编译包体查验 ] ===================="
+          echo "==================== [ 2.1 载入 BinaryUtils 纯手工推演总线 ] ===================="
+          java -cp binary-demo/target/classes com.zhiya.binary.BinaryUtils
+          
+          echo "==================== [ 2.2 载入 DynamicStateGuard 订单权限状态流转 ] ===================="
+          java -cp binary-demo/target/classes com.zhiya.binary.DynamicStateGuard
+          
+          echo "==================== [ 2.3 载入 LeetCodeBitwiseClassics 力扣极客位操演示 ] ===================="
+          java -cp binary-demo/target/classes com.zhiya.binary.LeetCodeBitwiseClassics
+
+      - name: 🟣 3. 基准沙盘打包：构建 BitwiseBenchmark 独立公审镜像
+        run: |
+          echo "==================== [ 3. 执行 Maven 打包构建 ] ===================="
           cd benchmarks
           mvn clean package -DskipTests
           echo "✅ 基准压测独立镜像在 JDK 8 下构建成功！包体存放于: benchmarks/target/benchmarks.jar"
 
-      - name: 🟣 3. 终极验证：拉起 JMH 执行云端真实基准压测
+      - name: 🟡 4. 终极验证：启动 JMH 纳秒级微观基准跑分 (支持动态控制流)
         run: |
-          echo "==================== [ 3. 启动 JMH 纳秒级跑分比对 ] ===================="
-          # 传递极速压测指令：-wi 1(预热1轮) -i 3(测量3轮) -f 1(独立分叉1次) -t 1(单线程)
-          java -jar benchmarks/target/benchmarks.jar -wi 1 -i 3 -f 1 -t 1
+          echo "==================== [ 4. 拉起 JMH 纳秒级跑分比对 ] ===================="
+          # 动态获取 workflow_dispatch 传入的线程数，若通过 push 自动触发则默认采用单线程 (1)
+          # 参数规约：-wi 1(预热1轮) -i 3(测量3轮) -f 1(独立分叉1次) -t 动态传参
+          java -jar benchmarks/target/benchmarks.jar -wi 1 -i 3 -f 1 -t ${{ github.event.inputs.threads || 1 }}
