@@ -49,7 +49,7 @@ public class BitwiseBenchmark {
     }
 
     @Benchmark
-    public boolean testDeMorganOptimized() {
+    public boolean testDeMorganNewCorrect() {
         // 严谨修复：通过复合掩码聚合，直接判断目标位是否全为0，完美规避无关高位取反导致的脏数据错判
         return (clientFlags & (TRUSTED_IP | NORMAL_RATE)) == 0;
     }
