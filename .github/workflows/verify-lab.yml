@@ -26,40 +26,52 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: 🟢 1. 动态寻址编译：一键联编 binary-demo 目录下所有 Java 源码
+      # =============================================
+      # 第一部分：binary-demo（二进制 & 位运算）
+      # =============================================
+      - name: 🟢 1. 编译 binary-demo & tree-demo 全量源码
         run: |
-          echo "==================== [ 1. 执行 javac 递归寻址字节码全量编译 ] ===================="
+          echo "==================== [ 1. 递归寻址编译 binary-demo + tree-demo ] ===================="
           mkdir -p binary-demo/target/classes
-          # 核心大招：动态扫描寻址 binary-demo 目录下任意深度文件夹内的 .java 文件并实施合并编译
-          # 免除后续新增案例文件时修改配置文件的维护成本
+          mkdir -p tree-demo/target/classes
+
+          # 编译 binary-demo
           find binary-demo -name "*.java" | xargs javac -d binary-demo/target/classes
 
-      - name: 🔵 2. 自动化公审：依次加载执行底座二进制实战类库
+          # 编译 tree-demo
+          find tree-demo -name "*.java" | xargs javac -d tree-demo/target/classes
+
+          echo "✅ binary-demo & tree-demo 全量编译通过"
+
+      - name: 🔵 2. 自动化公审 binary-demo（二进制实战类库）
         run: |
           echo "==================== [ 2.1 载入 BinaryUtils 纯手工推演总线 ] ===================="
           java -cp binary-demo/target/classes com.zhiya.binary.BinaryUtils
-          
+
           echo "==================== [ 2.2 载入 DynamicStateGuard 订单权限状态流转 ] ===================="
           java -cp binary-demo/target/classes com.zhiya.binary.DynamicStateGuard
-          
+
           echo "==================== [ 2.3 载入 LeetCodeBitwiseClassics 力扣极客位操演示 ] ===================="
           java -cp binary-demo/target/classes com.zhiya.binary.LeetCodeBitwiseClassics
 
           echo "==================== [ 2.4 载入 BloomFilterBitMapGuard 防穿透布隆大闸 ] ===================="
           java -cp binary-demo/target/classes com.zhiya.binary.BloomFilterBitMapGuard
-          
+
           echo "==================== [ 2.5 载入 SnowflakeBitwiseGenerator 雪花算法 ID 合成 ] ===================="
           java -cp binary-demo/target/classes com.zhiya.binary.SnowflakeBitwiseGenerator
 
           echo "==================== [ 2.6 载入 HyperLogLogBitwiseEstimator 亿级去重 ] ===================="
           java -cp binary-demo/target/classes com.zhiya.binary.HyperLogLogBitwiseEstimator
-          
+
           echo "==================== [ 2.7 载入 GeohashBitwiseSpatialIndex 空间交织寻址 ] ===================="
           java -cp binary-demo/target/classes com.zhiya.binary.GeohashBitwiseSpatialIndex
 
           echo "==================== [ 2.8 载入 ConsistentHashBinaryRing 一致性哈希环 ] ===================="
           java -cp binary-demo/target/classes com.zhiya.binary.ConsistentHashBinaryRing
 
+      # =============================================
+      # 第二部分：tree-demo（树形数据结构）+ 跳表
+      # =============================================
       - name: 🟠 3. 自动化公审 tree-demo（树结构 & 跳表）
         run: |
           CP=tree-demo/target/classes
@@ -91,16 +103,17 @@ jobs:
           echo "==================== [ 3.9 载入 SkipList 无锁并发跳表 CAS 推演 ] ===================="
           java -cp $CP com.zhiya.tree.SkipList
 
-      - name: 🟣 3. 基准沙盘打包：构建 BitwiseBenchmark 独立公审镜像
+      # =============================================
+      # 第三部分：JMH 基准测试
+      # =============================================
+      - name: 🟣 4. 基准沙盘打包：构建 BitwiseBenchmark 独立公审镜像
         run: |
-          echo "==================== [ 3. 执行 Maven 打包构建 ] ===================="
+          echo "==================== [ 4. 执行 Maven 打包构建 ] ===================="
           cd benchmarks
           mvn clean package -DskipTests
           echo "✅ 基准压测独立镜像在 JDK 8 下构建成功！包体存放于: benchmarks/target/benchmarks.jar"
 
-      - name: 🟡 4. 终极验证：启动 JMH 纳秒级微观基准跑分 (支持动态控制流)
+      - name: 🟡 5. 终极验证：启动 JMH 纳秒级微观基准跑分 (支持动态控制流)
         run: |
-          echo "==================== [ 4. 拉起 JMH 纳秒级跑分比对 ] ===================="
-          # 动态获取 workflow_dispatch 传入的线程数，若通过 push 自动触发则默认采用单线程 (1)
-          # 参数规约：-wi 1(预热1轮) -i 3(测量3轮) -f 1(独立分叉1次) -t 动态传参
+          echo "==================== [ 5. 拉起 JMH 纳秒级跑分比对 ] ===================="
           java -jar benchmarks/target/benchmarks.jar -wi 1 -i 3 -f 1 -t ${{ github.event.inputs.threads || 1 }}
