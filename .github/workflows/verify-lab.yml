@@ -60,6 +60,37 @@ jobs:
           echo "==================== [ 2.8 载入 ConsistentHashBinaryRing 一致性哈希环 ] ===================="
           java -cp binary-demo/target/classes com.zhiya.binary.ConsistentHashBinaryRing
 
+      - name: 🟠 3. 自动化公审 tree-demo（树结构 & 跳表）
+        run: |
+          CP=tree-demo/target/classes
+
+          echo "==================== [ 3.1 载入 BST 二叉搜索树 ] ===================="
+          java -cp $CP com.zhiya.tree.BST
+
+          echo "==================== [ 3.2 载入 RedBlackBalancedTree 红黑树（泛型版）] ===================="
+          java -cp $CP com.zhiya.tree.RedBlackBalancedTree
+
+          echo "==================== [ 3.3 载入 TreeTraversal 非递归遍历 5 种 ] ===================="
+          java -cp $CP com.zhiya.tree.TreeTraversal
+
+          echo "==================== [ 3.4 载入 MaxHeap 最大堆 ] ===================="
+          java -cp $CP com.zhiya.tree.MaxHeap
+
+          echo "==================== [ 3.5 载入 MinHeap 最小堆 ] ===================="
+          java -cp $CP com.zhiya.tree.MinHeap
+
+          echo "==================== [ 3.6 载入 Trie 字典树 ] ===================="
+          java -cp $CP com.zhiya.tree.Trie
+
+          echo "==================== [ 3.7 载入 BTree B 树 ] ===================="
+          java -cp $CP com.zhiya.tree.BTree
+
+          echo "==================== [ 3.8 载入 BPlusTree B+ 树 ] ===================="
+          java -cp $CP com.zhiya.tree.BPlusTree
+
+          echo "==================== [ 3.9 载入 SkipList 无锁并发跳表 CAS 推演 ] ===================="
+          java -cp $CP com.zhiya.tree.SkipList
+
       - name: 🟣 3. 基准沙盘打包：构建 BitwiseBenchmark 独立公审镜像
         run: |
           echo "==================== [ 3. 执行 Maven 打包构建 ] ===================="
