@@ -117,3 +117,21 @@ jobs:
         run: |
           echo "==================== [ 5. 拉起 JMH 纳秒级跑分比对 ] ===================="
           java -jar benchmarks/target/benchmarks.jar -wi 1 -i 3 -f 1 -t ${{ github.event.inputs.threads || 1 }}
+
+     # =============================================
+      # 第四部分：树形数据结构微基准 (新增 · TreeBenchmark)
+      # =============================================
+      # 注：TreeBenchmark 内部通过 @Param("1000"/"10000"/"100000") 自动展开 3 档数据规模
+      #     -wi 2 -i 3 略低于 BitwiseBenchmark 以保证 CI 总时长可控 (5 分钟左右)
+      #     与第 5 步的 BitwiseBenchmark 走同一份打包产物，零额外构建开销
+      # =============================================
+      - name: 🌳 6. 树形数据结构 JMH 纳秒级压测 (BST / MaxHeap / MinHeap / RedBlackTree · 1K~100K)
+        run: |
+          echo "==================== [ 6. 拉起树基准 TreeBenchmark 跑分 ] ===================="
+          java -jar benchmarks/target/benchmarks.jar TreeBenchmark -wi 2 -i 3 -f 1 -t ${{ github.event.inputs.threads || 1 }}
+
+
+
+
+
+          
