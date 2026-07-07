@@ -12,8 +12,14 @@
         <!-- 完美贴合老牌生产框架：锁定 JDK 8 (1.8) 构建规格 -->
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <!-- 显式锁定 UTF-8：CI runner 默认就是 UTF-8，但显式更稳，避免 LANG=C 容器踩坑 -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <jmh.version>1.37</jmh.version>
-       <!--tree-demo 是 "源码即文档" 的扁平工程（无 pom.xml），这里直接把它当作一个额外的 source 根目录纳入编译路径-->
+        <!--
+            tree-demo 是 "源码即文档" 的扁平工程（无 pom.xml），
+            这里直接把它当作一个额外的 source 根目录纳入编译路径。
+        -->
         <tree.demo.source>${project.basedir}/../tree-demo/src/main/java</tree.demo.source>
     </properties>
 
@@ -32,9 +38,15 @@
     </dependencies>
 
     <build>
+        <!--
+            把 ../tree-demo/src/main/java 当作额外的源码根，
+            这样 mvn package 一条命令即可：
+                1) 编译 com.zhiya.tree.*  (BST/MaxHeap/MinHeap/RedBlackTree/...)
+                2) 编译 com.zhiya.benchmark.* (BitwiseBenchmark/TreeBenchmark)
+                3) shade 打包成可执行 benchmarks.jar
+        -->
+        <sourceDirectory>src/main/java</sourceDirectory>
         <plugins>
-            <sourceDirectory>src/main/java</sourceDirectory>
-            <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
@@ -53,7 +65,8 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>         
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -61,7 +74,9 @@
                 <executions>
                     <execution>
                         <phase>package</phase>
-                        <goals><goal>shade</goal></goals>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
                         <configuration>
                             <finalName>benchmarks</finalName>
                             <transformers>
