@@ -96,7 +96,9 @@ public class TreeBenchmark {
             tree = new BST();
             for (int v : data) tree.insert(v);
             hitSet = data;
-            missSet = TreeBenchmark.missSet(n);
+            //missSet = TreeBenchmark.missSet(n);
+            missSet = randomUnique(n, 99L);  // 用不同 seed 避免和 hit 集重复
+            for (int i = 0; i < missSet.length; i++) missSet[i] += n;
         }
     }
 
