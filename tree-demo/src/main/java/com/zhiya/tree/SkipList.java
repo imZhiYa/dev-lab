@@ -1,5 +1,7 @@
 package com.zhiya.tree;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -101,8 +103,8 @@ public class SkipList<E extends Comparable<E>> {
     // =====================================
     // Level 0 遍历（底层 = 全量有序数据）
     // =====================================
-    public java.util.List<E> dumpLevel0() {
-        java.util.List<E> result = new java.util.ArrayList<>();
+    public List<E> dumpLevel0() {
+        List<E> result = new ArrayList<>();
         Node<E> cur = head.next[0].get();
         while (cur != null) {
             result.add(cur.val);
@@ -132,13 +134,23 @@ public class SkipList<E extends Comparable<E>> {
         System.out.println("  >> Level 0 = 完整有序数据，上层 = 捷径索引");
     }
 
+    private static String repeat(String s, int count) {
+        if (count <= 0) return "";
+        char[] chars = new char[s.length() * count];
+        for (int k = 0; k < count; k++)
+            for (int j = 0; j < s.length(); j++)
+                chars[k * s.length() + j] = s.charAt(j);
+        return new String(chars);
+    }
+
+
     // =====================================
     // main
     // =====================================
     public static void main(String[] args) throws InterruptedException {
-        System.out.println("=".repeat(60));
+        System.out.println(repeat("=", 60));
         System.out.println("🌳 跳表（无锁 CAS）· 代码验证");
-        System.out.println("=".repeat(60));
+        System.out.println(repeat("=", 60));
 
         // 1. 单线程基本验证
         System.out.println("\n📥 单线程插入: 10, 50, 80, 30, 65");
@@ -178,7 +190,7 @@ public class SkipList<E extends Comparable<E>> {
         for (Thread th : threads) th.start();
         for (Thread th : threads) th.join();
 
-        java.util.List<Integer> concurrentResult = concurrentSkip.dumpLevel0();
+        List<Integer> concurrentResult = concurrentSkip.dumpLevel0();
         boolean concurrentSorted = true;
         for (int i = 1; i < concurrentResult.size(); i++) {
             if (concurrentResult.get(i) < concurrentResult.get(i - 1)) concurrentSorted = false;
