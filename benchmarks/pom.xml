@@ -13,6 +13,8 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <jmh.version>1.37</jmh.version>
+       <!--tree-demo 是 "源码即文档" 的扁平工程（无 pom.xml），这里直接把它当作一个额外的 source 根目录纳入编译路径-->
+        <tree.demo.source>${project.basedir}/../tree-demo/src/main/java</tree.demo.source>
     </properties>
 
     <dependencies>
@@ -31,6 +33,27 @@
 
     <build>
         <plugins>
+            <sourceDirectory>src/main/java</sourceDirectory>
+            <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>add-tree-demo-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${tree.demo.source}</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>         
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
