@@ -143,12 +143,11 @@ jobs:
           echo "==================== [ 7. Stack profiler 完整 CPU 分布 (tail -100 of diag-output.txt) ] ===================="
           tail -100 diag-output.txt
 
-      - name: 📦 8. 上传诊断输出为 Artifact
+      - name: 📦 8. 上传诊断输出为 Artifact (你可以下载到本地慢慢看)
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: diag-output
           path: benchmarks/diag-output.txt
           retention-days: 7
-          if-no-files-found: warn    
-          
+          if-no-files-found: warn   
