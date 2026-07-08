@@ -128,8 +128,7 @@ jobs:
       - name: 🌳 6. 树形数据结构 JMH 纳秒级压测 (BST / MaxHeap / MinHeap / RedBlackTree · 1K~100K)
         run: |
           echo "==================== [ 6. 拉起树基准 TreeBenchmark 跑分 ] ===================="
-          java -jar benchmarks/target/benchmarks.jar TreeBenchmark -wi 5 -i 5 -f 1 -t 1
-
+          java -jar benchmarks/target/benchmarks.jar "TreeBenchmark.*" -p n=10000 -t 1
 
 
 
