@@ -1,137 +1,277 @@
+<div align="center">
+
 # 🧬 dev-lab · 代码验证实验室
 
-<p align="center">
-  <strong>Code Verification Lab — Binary & Tree & More</strong>
-  <br>
-  <em>知识库讲原理，这里写代码验证</em>
-</p>
+**Code Verification Lab — Binary & Tree & Benchmark**
 
-<p align="center">
-  <a href="https://github.com/imZhiYa/tech-knowledge-docs">
-    <img src="https://img.shields.io/badge/powered_by-tech--knowledge--docs-blue?style=flat-square" alt="Powered by tech-knowledge-docs">
-  </a>
-  <a href="./LICENSE">
-    <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="MIT License">
-  </a>
-  <img src="https://img.shields.io/badge/language-Java-orange?style=flat-square" alt="Language: Java">
-</p>
+_知识库讲原理，这里写代码验证_
+
+[![MIT License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
+![Language: Java 8](https://img.shields.io/badge/language-Java%208-orange?style=flat-square)
+[![Powered by tech-knowledge-docs](https://img.shields.io/badge/powered_by-tech--knowledge--docs-blue?style=flat-square)](https://github.com/imZhiYa/tech-knowledge-docs)
+[![CI](https://github.com/imZhiYa/dev-lab/actions/workflows/verify-lab.yml/badge.svg)](https://github.com/imZhiYa/dev-lab/actions/workflows/verify-lab.yml)
+
+</div>
 
 ---
 
-## 关于
+## 🎯 关于本仓库
 
-这个仓库是 [tech-knowledge-docs](https://github.com/imZhiYa/tech-knowledge-docs) 的**代码验证配套项目**。
+`dev-lab` 是 [tech-knowledge-docs](https://github.com/imZhiYa/tech-knowledge-docs) 知识库的**代码验证配套项目**——知识库讲原理，这里负责把能用代码验证的理论结论落地为**可运行、可量化、可对照**的最小可执行实现。
 
-知识库讲原理，这里写代码验证。所有能用代码验证的理论结论，都会在这里落地为可运行的实现。
+> 📚 **知识库** → 讲原理、推导、极端场景
+> 🧬 **dev-lab** → 写代码落地验证
+
+每个模块遵循三个原则：
+
+- **零外部依赖**（除 JMH）：每个 `.java` 文件都能 `javac && java` 直接跑
+- **自包含 `main`**：每个类都是独立的验证 demo，控制台输出可重放
+- **可量化**：关键操作都有对应的 JMH 微基准，给出纳秒级实测数据
 
 ---
 
-## 目录结构
+## 📐 目录结构
 
 ```
 dev-lab/
 │
-├── binary-demo/                          # 📐 二进制 & 位运算
+├── binary-demo/                                    # 📐 二进制 & 位运算
 │   └── src/main/java/com/zhiya/binary/
-│       ├── BinaryUtils.java              # 二进制工具类（进制转换/补码/位运算）
-│       ├── BloomFilterBitMapGuard.java   # 布隆过滤器&位图防缓存穿透
-│       ├── ConsistentHashBinaryRing.java # 一致性哈希环（虚拟节点防倾斜）
-│       ├── DynamicStateGuard.java        # 位运算状态机（订单状态流转）
-│       ├── GeohashBitwiseSpatialIndex.java # Geohash 空间索引（经纬度编码）
-│       ├── HyperLogLogBitwiseEstimator.java # HyperLogLog 基数估计
-│       ├── LeetCodeBitwiseClassics.java  # LeetCode 位运算经典题解
-│       └── SnowflakeBitwiseGenerator.java # 雪花算法 ID 生成器
+│       ├── BinaryUtils.java                        #   进制转换、补码、位运算工具集
+│       ├── BloomFilterBitMapGuard.java             #   布隆过滤器 & 位图防缓存穿透
+│       ├── ConsistentHashBinaryRing.java           #   一致性哈希环（虚拟节点防倾斜）
+│       ├── DynamicStateGuard.java                  #   位运算状态机（订单状态流转）
+│       ├── GeohashBitwiseSpatialIndex.java         #   经纬度 64 位编码、Base32 GeoHash
+│       ├── HyperLogLogBitwiseEstimator.java        #   基数估计（亿级 UV 去重）
+│       ├── LeetCodeBitwiseClassics.java            #   LeetCode 位运算经典题解
+│       └── SnowflakeBitwiseGenerator.java          #   雪花算法 ID 合成
 │
-├── benchmarks/                           # ⚡ JMH 微基准测试
-│   └── src/main/java/com/zhiya/benchmark/
-│       └── BitwiseBenchmark.java         # 位运算性能基准
-│
-├── tree-demo/                            # 🌳 树形数据结构
+├── tree-demo/                                      # 🌳 树形数据结构
 │   └── src/main/java/com/zhiya/tree/
-│       ├── BST.java                      # 二叉搜索树
-│       ├── AVLTree.java                  # AVL 平衡树
-│       ├── RedBlackTree.java             # 红黑树
-│       ├── BinaryTreeTraversal.java      # 二叉树遍历
-│       ├── MaxHeap.java                  # 最大堆
-│       ├── MinHeap.java                  # 最小堆
-│       ├── Trie.java                     # 字典树
-│       ├── BTree.java                    # B 树
-│       └── BPlusTree.java               # B+ 树
+│       ├── BST.java                                #   二叉搜索树
+│       ├── BTree.java                              #   B 树（阶=3）
+│       ├── BPlusTree.java                          #   B+ 树
+│       ├── MaxHeap.java                            #   最大堆（数组实现）
+│       ├── MinHeap.java                            #   最小堆（数组实现）
+│       ├── NonRecursiveTraversal.java              #   非递归遍历 5 种
+│       ├── RedBlackTree.java                       #   红黑树（泛型版）
+│       ├── SkipList.java                           #   无锁并发跳表
+│       └── Trie.java                               #   字典树
 │
-└── ... 更多模块按需补充（JVM / 并发 / 网络…）
+├── benchmarks/                                     # ⚡ JMH 微基准测试
+│   └── src/main/java/com/zhiya/benchmark/
+│       ├── BitwiseBenchmark.java                   #   位运算性能基准
+│       ├── TreeBenchmark.java                      #   树形数据结构基准（参数化）
+│       └── TreeBenchmarkDiagnostic.java            #   诊断版（排查异常差异）
+│
+├── .github/workflows/
+│   └── verify-lab.yml                              # 🔄 CI: 编译 + 公审 + 跑分 + 诊断
+│
+├── .gitignore
+├── LICENSE                                         # 📜 MIT
+└── README.md                                       # 📖 你正在看
 ```
 
 ---
 
-## 🟢 已完成 · Binary（8 个 Java 文件）
+## 🧪 已实现能力矩阵
 
-| 文件 | 对应知识点 | 验证内容 |
-|------|-----------|---------|
+### 🟢 Binary · 位运算实战（8 个文件）
+
+| 文件 | 知识点 | 验证内容 |
+|---|---|---|
 | `BinaryUtils.java` | 二进制底层思维 | 进制转换、补码运算、位操作工具集 |
-| `BloomFilterBitMapGuard.java` | 位图实战 | 布隆过滤器实现、缓存穿透防护 |
-| `ConsistentHashBinaryRing.java` | 分布式哈希 | 一致性哈希环、虚拟节点、数据倾斜 |
+| `BloomFilterBitMapGuard.java` | 位图 + 哈希 | 布隆过滤器、缓存穿透防护 |
+| `ConsistentHashBinaryRing.java` | 分布式哈希 | 一致性哈希环、虚拟节点防数据倾斜 |
 | `DynamicStateGuard.java` | 状态压缩 | 订单状态流转的位运算状态机 |
 | `GeohashBitwiseSpatialIndex.java` | 空间索引 | 经纬度 64 位编码、Base32 GeoHash |
-| `HyperLogLogBitwiseEstimator.java` | 基数估计 | HyperLogLog 位运算实现 |
-| `LeetCodeBitwiseClassics.java` | 面试算法 | LeetCode 位运算经典题目 |
-| `SnowflakeBitwiseGenerator.java` | 分布式 ID | 雪花算法位运算实现 |
+| `HyperLogLogBitwiseEstimator.java` | 基数估计 | 概率性 UV 去重，标准误差 ~0.81% |
+| `LeetCodeBitwiseClassics.java` | 面试算法 | LeetCode 位运算经典题解 |
+| `SnowflakeBitwiseGenerator.java` | 分布式 ID | 雪花算法位运算版 |
 
-## 🟢 已完成 · Tree（9 个 Java 文件）
+### 🟢 Tree · 树形数据结构（9 个文件）
 
-| 文件 | 对应知识点 |
-|------|-----------|
-| `BST.java` | 二叉搜索树 |
-| `AVLTree.java` | AVL 平衡树 |
-| `RedBlackTree.java` | 红黑树 |
-| `BinaryTreeTraversal.java` | 二叉树遍历 |
-| `MaxHeap.java` | 最大堆 |
-| `MinHeap.java` | 最小堆 |
-| `Trie.java` | 字典树 |
-| `BTree.java` | B 树 |
-| `BPlusTree.java` | B+ 树 |
+| 文件 | 知识点 | 验证内容 |
+|---|---|---|
+| `BST.java` | 二叉搜索树 | 增删查、三种删除情况、合法性验证 |
+| `BTree.java` | 多路搜索树 | B 树（阶=3）的插入分裂、查找 |
+| `BPlusTree.java` | B 树变体 | B+ 树节点分裂、范围查询友好 |
+| `MaxHeap.java` | 完全二叉堆 | 上浮/下沉、堆排序 |
+| `MinHeap.java` | 完全二叉堆 | 上浮/下沉、堆排序 |
+| `NonRecursiveTraversal.java` | 遍历技巧 | 前/中/后序（单栈+双栈）+ BFS |
+| `RedBlackTree.java` | 自平衡 BST | 5 条不变式、旋转、泛型 K/V |
+| `SkipList.java` | 概率平衡 | 无锁 CAS 插入、层级跳跃 |
+| `Trie.java` | 前缀树 | 插入/查找/前缀匹配/删除 |
 
----
+### 🟢 Benchmark · JMH 微基准（3 个文件）
 
-## 🧩 与 tech-knowledge-docs 的关系
-
-```
-📚 tech-knowledge-docs       → 讲原理、推导、极端场景
-🧬 dev-lab                   → 写代码落地验证
-```
-
-例如：
-- `binary/01-二进制底层思维与位运算.md` 👉 `BinaryUtils.java` + `LeetCodeBitwiseClassics.java`
-- `data-structures/🌳 树形数据结构.md` 👉 `tree-demo/`（9 个树结构实现）
+| 文件 | 测试对象 | 用途 |
+|---|---|---|
+| `BitwiseBenchmark.java` | 位运算 vs 算术 | 算术替代、掩码聚合、HashMap 容量对齐 |
+| `TreeBenchmark.java` | BST / MaxHeap / MinHeap / RedBlackTree | 1K / 10K / 100K 三档规模基准 |
+| `TreeBenchmarkDiagnostic.java` | BST（单档 n=10000） | 排查 hit/miss 路径异常差异的对照实验 |
 
 ---
 
-## 如何使用
+## 📊 基准测试成绩（最近一次 CI #44 · 2026-07-07）
+
+> 🖥️ **环境**：GitHub Actions `ubuntu-latest` · JDK 8 (Temurin) · 1 线程
+> ⚙️ **命令**：`java -jar benchmarks/target/benchmarks.jar "TreeBenchmark.*" -p n=10000 -t 1`
+> ⏱️ **测量**：`@Warmup(3, 1s) @Measurement(5, 1s) @Fork(1)`
+
+### 🌳 BST（二叉搜索树 · n=10K）
+
+| 操作 | 耗时 | 单位 |
+|---|---:|---|
+| `bstSearchHit`（命中） | 0.093 | μs/op |
+| `bstSearchMiss`（未命中） | 0.016 | μs/op |
+| `bstBulkInsert`（批量建树） | 867.851 | μs/op |
+
+### ⛰️ 堆（数组实现 · n=10K）
+
+| 操作 | 耗时 | 单位 |
+|---|---:|---|
+| `maxHeapPeek` | 0.003 | μs/op |
+| `maxHeapExtract` | 74.976 | μs/op |
+| `maxHeapBulkInsert`（无参构造） | 108.776 | μs/op |
+| `maxHeapBulkInsertPrealloc`（预分配） | 84.912 | μs/op |
+| `minHeapPeek` | 0.003 | μs/op |
+| `minHeapExtract` | 109.689 | μs/op |
+| `minHeapBulkInsert` | 111.805 | μs/op |
+
+### 🔴 红黑树（泛型 · n=10K）
+
+| 操作 | 耗时 | 单位 |
+|---|---:|---|
+| `rbtBulkPut`（新插入） | 1484.214 | μs/op |
+| `rbtPutUpdate`（覆盖已存在 key） | 2908.153 | μs/op |
+
+> 📌 **数据会随 CI 浮动**。想看最新数据：在 Actions 页面跑一次 workflow，或本地 `mvn clean package -DskipTests` 后跑 jar。
+> 📌 **更多档位（1K / 100K）**：TreeBenchmark 内部用 `@Param` 展开，去掉 `-p n=10000` 即可跑全档。
+
+---
+
+## 🚀 如何使用
+
+### 0. 克隆
 
 ```bash
 git clone https://github.com/imZhiYa/dev-lab.git
 cd dev-lab
+```
 
-# 编译运行 binary-demo
+### 1. 跑 Binary 位运算类（8 个 demo）
+
+```bash
 cd binary-demo
-mvn compile exec:java
+mkdir -p target/classes
+find src/main/java -name "*.java" | xargs javac -d target/classes
 
-# 运行 JMH 基准测试
+# 任选一个跑（每个类都自带 main() 验证 demo）
+java -cp target/classes com.zhiya.binary.BinaryUtils
+java -cp target/classes com.zhiya.binary.HyperLogLogBitwiseEstimator
+# ... 其他 6 个类同理
+```
+
+### 2. 跑 Tree 树形结构类（9 个 demo）
+
+```bash
+cd tree-demo
+mkdir -p target/classes
+find src/main/java -name "*.java" | xargs javac -d target/classes
+
+# 任选一个跑
+java -cp target/classes com.zhiya.tree.BST
+java -cp target/classes com.zhiya.tree.RedBlackTree
+# ... 其他 7 个类同理
+```
+
+### 3. 跑 JMH 微基准测试
+
+```bash
 cd benchmarks
-mvn clean install
-java -jar target/benchmarks.jar
+mvn clean package -DskipTests
+# 产物: target/benchmarks.jar (fat jar,含 JMH 依赖)
+```
+
+**列出所有 benchmark：**
+```bash
+java -jar target/benchmarks.jar -l
+```
+
+**跑位运算基准：**
+```bash
+java -jar target/benchmarks.jar BitwiseBenchmark -wi 2 -i 3 -f 1 -t 1
+```
+
+**跑树基准（全档 1K / 10K / 100K）：**
+```bash
+java -jar target/benchmarks.jar TreeBenchmark -wi 2 -i 3 -f 1 -t 1
+```
+
+**只跑某一档规模：**
+```bash
+# 只看 10K 节点
+java -jar target/benchmarks.jar "TreeBenchmark.*" -p n=10000 -t 1
+
+# 只看 BST 相关
+java -jar target/benchmarks.jar "TreeBenchmark.bst.*" -t 1
+```
+
+**跑诊断版（排查特定异常差异）：**
+```bash
+java -jar target/benchmarks.jar TreeBenchmarkDiagnostic -p n=10000 -t 1
+```
+
+**导出 JSON 给二次分析：**
+```bash
+java -jar target/benchmarks.jar TreeBenchmark -rf json -rff result.json
 ```
 
 ---
 
-## 关联项目
+## 🧩 与 tech-knowledge-docs 的对应
 
-| 项目 | 说明 |
-|------|------|
-| [📚 tech-knowledge-docs](https://github.com/imZhiYa/tech-knowledge-docs) | 架构师硬核知识库（原理篇） |
-| [🧪 cs-visual-tools](https://github.com/imZhiYa/cs-visual-tools) | CS 可视化交互工具 |
+每个 `.java` 文件背后都对应知识库的一篇原理推导：
+
+| 知识库文档 | 代码验证文件 |
+|---|---|
+| `binary/01-二进制底层思维与位运算.md` | `BinaryUtils.java` + `LeetCodeBitwiseClassics.java` |
+| `binary/02-位图与布隆过滤器.md` | `BloomFilterBitMapGuard.java` |
+| `binary/03-一致性哈希环.md` | `ConsistentHashBinaryRing.java` |
+| `binary/04-位运算状态机.md` | `DynamicStateGuard.java` |
+| `binary/05-GeoHash 空间索引.md` | `GeohashBitwiseSpatialIndex.java` |
+| `binary/06-HyperLogLog 基数估计.md` | `HyperLogLogBitwiseEstimator.java` |
+| `binary/07-雪花算法.md` | `SnowflakeBitwiseGenerator.java` |
+| `data-structures/🌳 树形数据结构.md` | `tree-demo/` 全部 9 个文件 |
+| `benchmark/JMH 微基准方法论.md` | `BitwiseBenchmark.java` + `TreeBenchmark.java` + `TreeBenchmarkDiagnostic.java` |
 
 ---
 
-## 许可证
+## 🤝 贡献
 
-[MIT License](./LICENSE)
+欢迎通过以下方式参与：
+
+- 🐛 **Issue**：发现 bug、文档错漏、CI 异常 → 提 Issue
+- 🔧 **PR**：新数据结构、新基准维度、新位运算技巧 → Fork + PR
+- 📊 **数据反馈**：跑出不同机器/不同 JDK 的基准数据，贴 Issue 一起讨论
+
+**新增文件的规范**：
+- 每个 `.java` 必须有 `public static void main(String[])` 自包含 demo
+- 包名遵循 `com.zhiya.<模块>.<子类>`
+- 优先无外部依赖；如必须，加到 `pom.xml` 并在文件头注释里说明原因
+- 中文注释 + 英文变量名（与现有风格保持一致）
+
+---
+
+## 📜 许可证
+
+[MIT License](./LICENSE) © imZhiYa
+
+<div align="center">
+
+**[⬆ 回到顶部](#-dev-lab--代码验证实验室)**
+
+Made with 🧬 by [imZhiYa](https://github.com/imZhiYa)
+
+</div>
