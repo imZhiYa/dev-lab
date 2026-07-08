@@ -130,6 +130,16 @@ jobs:
           echo "==================== [ 6. 拉起树基准 TreeBenchmark 跑分 ] ===================="
           java -jar benchmarks/target/benchmarks.jar "TreeBenchmark.*" -p n=10000 -t 1
 
-
-
+      - name: 🔬 7. 诊断 TreeBenchmark (排查 hit/miss 13x 差异根因)
+        run: |
+          echo "==================== [ 7. 拉起诊断版 TreeBenchmarkDiagnostic 跑分 ] ===================="
+          # 把完整输出 (含 stack profiler) 重定向到文件,避免污染 GitHub Actions log
+          java -jar benchmarks/target/benchmarks.jar TreeBenchmarkDiagnostic -p n=10000 -prof stack >diag-output.txt 2>&1
+          echo "==================== [ 7. 诊断 stdout 调试部分 (hit/miss 集内容,验证 H1) ] ===================="
+          grep "^\[DIAG\]" diag-output.txt || echo "(无 [DIAG] 输出,看 diag-output.txt 附件)"
+          echo "==================== [ 7. 诊断 benchmark 结果表 (验证 H2/H3/H4) ] ===================="
+          grep -E "diag[0-9]_|Benchmark" diag-output.txt | head -20
+          echo "==================== [ 7. 完整 stack profiler 在 diag-output.txt (artifact) ] ===================="
+          wc -l diag-output.txt
+          echo "Stack profiler 完整 CPU 分布:  cat diag-output.txt | tail -200"    
           
