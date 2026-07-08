@@ -138,8 +138,17 @@ jobs:
           echo "==================== [ 7. 诊断 stdout 调试部分 (hit/miss 集内容,验证 H1) ] ===================="
           grep "^\[DIAG\]" diag-output.txt || echo "(无 [DIAG] 输出,看 diag-output.txt 附件)"
           echo "==================== [ 7. 诊断 benchmark 结果表 (验证 H2/H3/H4) ] ===================="
-          grep -E "diag[0-9]_|Benchmark" diag-output.txt | head -20
-          echo "==================== [ 7. 完整 stack profiler 在 diag-output.txt (artifact) ] ===================="
-          wc -l diag-output.txt
-          echo "Stack profiler 完整 CPU 分布:  cat diag-output.txt | tail -200"    
+          # 关键: JMH 分数行包含 ns/op 关键词,不能漏
+          grep -E "diag[0-9]_|Benchmark|ns/op" diag-output.txt | head -30
+          echo "==================== [ 7. Stack profiler 完整 CPU 分布 (tail -100 of diag-output.txt) ] ===================="
+          tail -100 diag-output.txt
+
+      - name: 📦 8. 上传诊断输出为 Artifact
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: diag-output
+          path: benchmarks/diag-output.txt
+          retention-days: 7
+          if-no-files-found: warn    
           
