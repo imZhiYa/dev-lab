@@ -1,0 +1,16 @@
+name: virtual-memory-demo 公审（金丝雀）
+
+on:
+  push:
+    paths:
+      - 'virtual-memory-demo/**'
+      - '.github/workflows/virtual-memory-demo-ci.yml'
+  workflow_dispatch:
+
+jobs:
+  canary:
+    name: 🐤 金丝雀：vm01 编译+运行+断言
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: make -C virtual-memory-demo run
