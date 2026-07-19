@@ -5,6 +5,7 @@
 #   make            编译全部 8 个实验到 bin/
 #   make run        编译并按 Level 顺序依次公审（任一实验 FAIL 即中止）
 #   make clean      清理 bin/
+# CMake 是本地开发主路径（见 CMakeLists.txt / macos-vscode-kit）；本文件保证
 # 零 CMake 环境（含 CI）也能一键验证
 # =============================================================================
 CXX      ?= c++                              # macOS：c++ 即 Apple clang++；Linux：c++ 即 g++
