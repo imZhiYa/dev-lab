@@ -1,16 +1,49 @@
-name: virtual-memory-demo 公审（金丝雀）
+# =============================================================================
+# virtual-memory-demo CI 公审（C++ 双通道）—— Linux 兜底
+# 落位：dev-lab 仓库的 .github/workflows/virtual-memory-demo-ci.yml
+# 与现有 verify-lab.yml 并存，互不影响（本工作流只关心 virtual-memory-demo/ 目录）
+# 触发：push/PR 触碰模块才跑（省 CI 分钟数），也支持手动 workflow_dispatch
+# =============================================================================
+name: virtual-memory-demo 公审
 
 on:
   push:
     paths:
       - 'virtual-memory-demo/**'
       - '.github/workflows/virtual-memory-demo-ci.yml'
+  pull_request:
+    paths:
+      - 'virtual-memory-demo/**'
   workflow_dispatch:
 
 jobs:
-  canary:
-    name: 🐤 金丝雀：vm01 编译+运行+断言
+  # ── 通道①：Makefile 零依赖快道（与 CI 设计理念一致：CMake 挂了它还能兜住）──
+  cpp-make-run:
+    name: 🧠 C++ 八连公审（Makefile 快道）
+    runs-on: ubuntu-latest            # 真 Linux x86-64，/proc 语义全真实
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 编译 8 个实验（-O2 -std=c++20 -Wall -Wextra）
+        run: make -C virtual-memory-demo -j2
+
+      - name: make run 顺序公审（任一严格断言 FAIL 即红）
+        run: make -C virtual-memory-demo run
+
+  # ── 通道②：CMake + CTest（虚拟内存实验室的标准公审口径，双保险）──────────────
+  cpp-cmake-ctest:
+    name: 🧪 C++ 八连公审（CMake/CTest 标准道）
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: make -C virtual-memory-demo run
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 配置（模块独立模式，cmake 是 ubuntu-latest 预装）
+        run: cmake -S virtual-memory-demo -B virtual-memory-demo/build -DCMAKE_BUILD_TYPE=RelWithDebInfo
+
+      - name: 构建（警告即审视）
+        run: cmake --build virtual-memory-demo/build -j2
+
+      - name: ctest 公审（100% tests passed / 8 才算过）
+        run: ctest --test-dir virtual-memory-demo/build --output-on-failure
