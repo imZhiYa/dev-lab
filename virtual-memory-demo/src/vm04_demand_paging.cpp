@@ -21,6 +21,8 @@
 // =============================================================================
 #include "vm_probe.h"      // 跨平台观测层：Linux /proc 与 macOS libproc 收敛成同一套 API
 
+#include <sys/mman.h>       // madvise（Linux 分支用于 MADV_NOHUGEPAGE 校正器）
+
 #include <cstdio>
 #include <cstdint>
 #include <cstdlib>
@@ -72,6 +74,19 @@ int main() {
     if (!buf) { std::printf("malloc 失败\n"); return 1; }
     MemSnap s1; read_mem(s1);
     print_snap("malloc 后", s1);
+
+#if defined(__linux__)
+    // ── THP 校正器（云主机/CI 实录）：透明大页(THP)会把 128MB 匿名区接管成 64 张 2MB 大页，
+    //    缺页计数从理论 32768 塌缩成 ~64（Actions 真凶实录：71 = 64 大页 + 7 杂项，rss 照涨不误）。
+    //    本实验的口径是「每页一次缺页」→ 明确声明这段地址不走 THP，还原 4KB 粒度。
+    {
+        const uintptr_t pg   = (uintptr_t)g_pagesize;
+        const uintptr_t from = ((uintptr_t)buf) & ~(pg - 1);
+        const size_t    alen = (size_t)((((uintptr_t)buf + SZ) - from + pg - 1) & ~(pg - 1));
+        if (madvise((void*)from, alen, MADV_NOHUGEPAGE) == 0)
+            std::printf("    ★ Linux 注脚：已声明 MADV_NOHUGEPAGE（防御云端 THP 吞掉缺页计数口径）\n");
+    }
+#endif
 
     // ── 阶段2：读者第一次真去翻每一页（每 4KB 写 1 字节 → 每页一次缺页中断）──
     auto t0 = std::chrono::steady_clock::now();
