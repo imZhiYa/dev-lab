@@ -45,42 +45,14 @@ jobs:
 
           echo "✅ jvm-demo 全部编译通过 (共 $(find jvm-demo -name '*.java' | wc -l) 个源文件)"
 
-      - name: 🔍 自动化公审 jvm-demo（JDK 21）
+      - name: 🔍 运行带 JVM 配置的验证脚本（推荐方式）
         run: |
-          CP="jvm-demo/target/classes"
-
-          echo "==================== [ 2.1 运行时数据区 (Jvm01) ] ===================="
-          java -cp $CP com.zhiya.runtime.Jvm01RuntimeDataArea
-
-          echo "==================== [ 2.2 类加载机制 (Jvm02) ] ===================="
-          java -cp $CP com.zhiya.classloading.Jvm02ClassLoadingMechanism
-
-          echo "==================== [ 2.3 对象布局 & TLAB (Jvm03) ] ===================="
-          java -cp $CP com.zhiya.object.Jvm03ObjectLayoutTlab
-
-          echo "==================== [ 2.4 同步锁升级 (Jvm04) ] ===================="
-          java -cp $CP com.zhiya.sync.Jvm04SyncLockUpgrade
-
-          echo "==================== [ 2.5 GC 日志诊断 (Jvm05) ] ===================="
-          java -cp $CP com.zhiya.gc.Jvm05GcLoggingDiagnosis
-
-          echo "==================== [ 2.6 JVM 监控演示 (Jvm06) ] ===================="
-          java -cp $CP com.zhiya.gc.Jvm06MonitoringDemo
-
-          echo "==================== [ 2.7 OOM 演示 - 堆空间 ] ===================="
-          java -cp $CP com.zhiya.oom.HeapSpaceOom || echo "（预期 OOM 演示结束）"
-
-          echo "==================== [ 2.8 OOM 演示 - Metaspace ] ===================="
-          java -cp $CP com.zhiya.oom.MetaspaceOom || echo "（预期 OOM 演示结束）"
-
-          echo "==================== [ 2.9 OOM 演示 - Direct Buffer ] ===================="
-          java -cp $CP com.zhiya.oom.DirectBufferMemoryOom || echo "（预期 OOM 演示结束）"
-
-          echo "==================== [ 2.10 OOM 演示 - GC Overhead ] ===================="
-          java -cp $CP com.zhiya.oom.GcOverheadLimitOom || echo "（预期 OOM 演示结束）"
+          echo "==================== [ 使用 jvm-demo/scripts/run-jvm-demos.sh 进行 JVM 配置验证 ] ===================="
+          chmod +x jvm-demo/scripts/run-jvm-demos.sh
+          bash jvm-demo/scripts/run-jvm-demos.sh
 
           echo "==================== [ 3. 全部验证完成 ] ===================="
-          echo "✅ jvm-demo JDK 21 全量公审通过！"
+          echo "✅ jvm-demo JDK 21 + JVM 配置验证通过！"
 
       - name: 📦 上传编译产物
         if: always()
@@ -89,4 +61,13 @@ jobs:
           name: jvm-demo-classes-jdk21
           path: jvm-demo/target/classes
           retention-days: 7
+          if-no-files-found: warn
+
+      - name: 📊 上传 JVM 高级诊断产物 (JFR + 日志 + HeapDump + NMT)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jvm-demo-jdk21-diagnostics
+          path: /tmp/jvm-demo-logs
+          retention-days: 14
           if-no-files-found: warn
