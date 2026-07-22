@@ -76,6 +76,16 @@
 #   - OOM 演示全部开启 -XX:+HeapDumpOnOutOfMemoryError
 #   - 所有 java 调用都使用 eval + set +e 保护
 #
+# 【核心演示重点】
+#   ★ MetaspaceOom 是本次演示的绝对核心！
+#   重点观察场景1：JDK 动态代理类无限生成
+#   预期在日志中看到：
+#     已生成代理类: 1000
+#     已生成代理类: 2000
+#     已生成代理类: 3000
+#     ...
+#   诊断命令：jcmd <pid> VM.classloader_stats
+#
 # =============================================================================
 
 set -euo pipefail
@@ -148,6 +158,38 @@ echo "=================================================="
 echo "🚀 jvm-demo JDK 21 + GC矩阵 + 诊断 (GC=$GC_TYPE)"
 echo "=================================================="
 
+# =====================================================
+# ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+#          【绝对核心】MetaspaceOom 演示
+# ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+# =====================================================
+echo ""
+echo "╔════════════════════════════════════════════════════════════════════════════╗"
+echo "║                                                                            ║"
+echo "║   ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★   ║"
+echo "║                                                                            ║"
+echo "║              核 心 演 示 程 序 ： MetaspaceOom                            ║"
+echo "║                                                                            ║"
+echo "║   场景 1：JDK 动态代理类无限生成  (本项目最核心演示)                       ║"
+echo "║                                                                            ║"
+echo "║   目标现象（请重点关注）：                                                 ║"
+echo "║     已生成代理类: 1000                                                     ║"
+echo "║     已生成代理类: 2000                                                     ║"
+echo "║     已生成代理类: 3000                                                     ║"
+echo "║     已生成代理类: 4000                                                     ║"
+echo "║     ... 持续增长直到 OOM                                                   ║"
+echo "║                                                                            ║"
+echo "║   推荐诊断（CI 日志中搜索或本地执行）：                                    ║"
+echo "║     - 搜索日志: \"已生成代理类\"                                           ║"
+echo "║     - jcmd <pid> VM.classloader_stats | grep -i proxy                      ║"
+echo "║     - jcmd <pid> VM.metaspace                                              ║"
+echo "║                                                                            ║"
+echo "╚════════════════════════════════════════════════════════════════════════════╝"
+echo ""
+echo ">>> 即将执行 MetaspaceOom（默认场景1）..."
+echo ">>> 参数: -XX:MaxMetaspaceSize=12m （故意设小，快速看到增长）"
+echo ""
+
 # -------------------------- JVM 通用参数 --------------------------
 COMMON="-XX:NativeMemoryTracking=summary"
 JFR="-XX:StartFlightRecording=name=jvm-demo-${GC_TYPE},settings=profile,maxsize=60M"
@@ -203,8 +245,43 @@ run "Jvm06" "com.zhiya.gc.Jvm06MonitoringDemo" "-Xms128m -Xmx128m -Xlog:gc*" fal
 
 # ===================== OOM 演示程序 =====================
 echo "=== OOM ==="
-run "HeapOom" "com.zhiya.oom.HeapSpaceOom" "-Xms32m -Xmx32m" true oom-heap
+
+# =====================================================
+# ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+#          【绝对核心】MetaspaceOom 演示
+#          用户明确声明：核心是 MetaspaceOom
+# =====================================================
+echo ""
+echo "╔════════════════════════════════════════════════════════════════════════════╗"
+echo "║                                                                            ║"
+echo "║   ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★   ║"
+echo "║                                                                            ║"
+echo "║              【核 心 焦 点】 MetaspaceOom                                 ║"
+echo "║                                                                            ║"
+echo "║   场景 1：JDK 动态代理类无限生成（本项目最核心演示）                       ║"
+echo "║   目标现象：持续打印「已生成代理类: 1000 / 2000 / 3000 ...」               ║"
+echo "║                                                                            ║"
+echo "║   诊断重点：                                                             ║"
+echo "║     • jcmd <pid> VM.classloader_stats  (看 $Proxy* 类数量)               ║"
+echo "║     • jcmd <pid> VM.metaspace                                            ║"
+echo "║                                                                            ║"
+echo "╚════════════════════════════════════════════════════════════════════════════╝"
+echo ""
+
+echo ">>> 【核心】开始执行 MetaspaceOom (默认场景1) ..."
+echo ">>> 参数: -XX:MaxMetaspaceSize=12m"
+echo ">>> 请重点关注下面的「已生成代理类」行是否持续递增"
+echo ""
+
 run "MetaOom" "com.zhiya.oom.MetaspaceOom" "-Xms128m -Xmx128m -XX:MaxMetaspaceSize=12m" true oom-meta
+
+echo ""
+echo ">>> 【核心演示结束】MetaspaceOom 已完成（预期 OOM）"
+echo ">>> 强烈建议在 summary 和日志中搜索 \"已生成代理类\" 查看增长曲线"
+echo ""
+
+# 其他 OOM 演示（非核心）
+run "HeapOom" "com.zhiya.oom.HeapSpaceOom" "-Xms32m -Xmx32m" true oom-heap
 run "DirectOom" "com.zhiya.oom.DirectBufferMemoryOom" "-Xms32m -Xmx32m -XX:MaxDirectMemorySize=6m" true oom-direct
 run "GcOverOom" "com.zhiya.oom.GcOverheadLimitOom" "-Xms16m -Xmx16m" true oom-gc
 
@@ -239,9 +316,24 @@ EOF
     # Section 1: Full GC / OOM 相关
     echo "=== 1. Full GC / OOM 相关 ===" >> "$summary"
     if [ -n "$all_logs" ]; then
-        grep -E -i "(full gc|oom|outofmemory|heapdump|gc overhead|directbuffer|OutOfMemoryError)" $all_logs 2>/dev/null | tail -30 >> "$summary" || echo "(无匹配的 Full GC / OOM 日志)" >> "$summary"
+        grep -E -i "(full gc|oom|outofmemory|heapdump|gc overhead|directbuffer|OutOfMemoryError|metaspace)" $all_logs 2>/dev/null | tail -30 >> "$summary" || echo "(无匹配的 Full GC / OOM 日志)" >> "$summary"
     else
         echo "(无日志文件)" >> "$summary"
+    fi
+    echo "" >> "$summary"
+
+    # 【特别突出核心演示】MetaspaceOom 日志
+    echo "=== ★★★ 核心演示：MetaspaceOom 代理类增长日志 ★★★ ===" >> "$summary"
+    metaspace_log=$(ls "$LOG_DIR"/*MetaOom*${GC_TYPE}.log 2>/dev/null | head -1)
+    if [ -n "$metaspace_log" ]; then
+        echo "MetaspaceOom 日志文件: $(basename "$metaspace_log")" >> "$summary"
+        echo "" >> "$summary"
+        grep -E "已生成代理类|代理类|MetaspaceOom|场景 1" "$metaspace_log" 2>/dev/null | tail -50 >> "$summary" || echo "(未找到代理类增长日志)" >> "$summary"
+        echo "" >> "$summary"
+        echo "--- MetaspaceOom 日志末尾 20 行 ---" >> "$summary"
+        tail -20 "$metaspace_log" 2>/dev/null >> "$summary"
+    else
+        echo "(未找到 MetaOom 日志)" >> "$summary"
     fi
     echo "" >> "$summary"
 
