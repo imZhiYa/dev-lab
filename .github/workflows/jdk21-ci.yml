@@ -1,9 +1,11 @@
 # =============================================================================
-# jvm-demo CI 公审（JDK 21 专用通道）
-# 落位：dev-lab 仓库的 .github/workflows/jdk21-ci.yml
-# 与现有 verify-lab.yml (JDK8) / virtual-memory-demo-ci.yml 并存，互不影响
-# 触发：push/PR 触碰 jvm-demo 模块才跑（节省 CI 分钟数），也支持手动 workflow_dispatch
-# 用途：专门使用 JDK 21 编译 + 运行 jvm-demo（运行时数据区 + 类加载机制）
+# jdk21-ci.yml — jvm-demo JDK 21 专用 CI 公审
+# 落位：.github/workflows/jdk21-ci.yml
+# 用途：使用 JDK 21 编译并运行 jvm-demo 下的所有 Java 验证程序
+# 特点：
+#   - 纯 javac + java（零外部依赖，符合仓库风格）
+#   - 仅在 jvm-demo/ 或本文件变更时触发
+#   - 完整覆盖：runtime + classloading + object + sync + gc + oom
 # =============================================================================
 
 name: jdk21-ci (jvm-demo)
@@ -19,13 +21,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  # ── JDK 21 通道：纯 javac + java 验证（与 repo 设计风格一致：零外部依赖） ──
   build-and-verify-jdk21:
-    name: ☕ jvm-demo JDK21 公审
+    name: ☕ jvm-demo JDK21 全量公审
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 拉取 dev-lab 源码
+      - name: 📥 拉取源码
         uses: actions/checkout@v4
 
       - name: ☕ 设置 JDK 21 (Temurin)
@@ -33,30 +34,55 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          # jvm-demo 无 Maven，cache 可省略；如需可加 cache: 'gradle' 或删除
 
-      - name: 🛠️ 编译 jvm-demo 全量源码 (JDK 21)
+      - name: 🛠️ 编译 jvm-demo 全部源码 (JDK 21)
         run: |
-          echo "==================== [ 1. 编译 jvm-demo (JDK21) ] ===================="
+          echo "==================== [ 1. 编译 jvm-demo 全模块 (JDK21) ] ===================="
           mkdir -p jvm-demo/target/classes
 
-          # 递归编译所有 .java（runtime + classloading 等）
+          # 递归编译 com/zhiya 下所有子包的 .java 文件
           find jvm-demo -name "*.java" | xargs javac -encoding UTF-8 -d jvm-demo/target/classes
 
-          echo "✅ jvm-demo 编译通过 (JDK 21)"
+          echo "✅ jvm-demo 全部编译通过 (共 $(find jvm-demo -name '*.java' | wc -l) 个源文件)"
 
-      - name: 🔍 自动化公审 jvm-demo（运行时数据区 + 类加载机制）
+      - name: 🔍 自动化公审 jvm-demo（JDK 21）
         run: |
-          echo "==================== [ 2.1 运行 Jvm01RuntimeDataArea（运行时五分区）] ===================="
-          java -cp jvm-demo/target/classes com.zhiya.runtime.Jvm01RuntimeDataArea
+          CP="jvm-demo/target/classes"
 
-          echo "==================== [ 2.2 运行 Jvm02ClassLoadingMechanism（类加载机制）] ===================="
-          java -cp jvm-demo/target/classes com.zhiya.classloading.Jvm02ClassLoadingMechanism
+          echo "==================== [ 2.1 运行时数据区 (Jvm01) ] ===================="
+          java -cp $CP com.zhiya.runtime.Jvm01RuntimeDataArea
 
-          echo "==================== [ 3. 验证完成 ] ===================="
-          echo "✅ jvm-demo JDK21 公审全部通过！"
+          echo "==================== [ 2.2 类加载机制 (Jvm02) ] ===================="
+          java -cp $CP com.zhiya.classloading.Jvm02ClassLoadingMechanism
 
-      - name: 📦 上传编译产物 (可选)
+          echo "==================== [ 2.3 对象布局 & TLAB (Jvm03) ] ===================="
+          java -cp $CP com.zhiya.object.Jvm03ObjectLayoutTlab
+
+          echo "==================== [ 2.4 同步锁升级 (Jvm04) ] ===================="
+          java -cp $CP com.zhiya.sync.Jvm04SyncLockUpgrade
+
+          echo "==================== [ 2.5 GC 日志诊断 (Jvm05) ] ===================="
+          java -cp $CP com.zhiya.gc.Jvm05GcLoggingDiagnosis
+
+          echo "==================== [ 2.6 JVM 监控演示 (Jvm06) ] ===================="
+          java -cp $CP com.zhiya.gc.Jvm06MonitoringDemo
+
+          echo "==================== [ 2.7 OOM 演示 - 堆空间 ] ===================="
+          java -cp $CP com.zhiya.oom.HeapSpaceOom || echo "（预期 OOM 演示结束）"
+
+          echo "==================== [ 2.8 OOM 演示 - Metaspace ] ===================="
+          java -cp $CP com.zhiya.oom.MetaspaceOom || echo "（预期 OOM 演示结束）"
+
+          echo "==================== [ 2.9 OOM 演示 - Direct Buffer ] ===================="
+          java -cp $CP com.zhiya.oom.DirectBufferMemoryOom || echo "（预期 OOM 演示结束）"
+
+          echo "==================== [ 2.10 OOM 演示 - GC Overhead ] ===================="
+          java -cp $CP com.zhiya.oom.GcOverheadLimitOom || echo "（预期 OOM 演示结束）"
+
+          echo "==================== [ 3. 全部验证完成 ] ===================="
+          echo "✅ jvm-demo JDK 21 全量公审通过！"
+
+      - name: 📦 上传编译产物
         if: always()
         uses: actions/upload-artifact@v4
         with:
