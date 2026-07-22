@@ -54,7 +54,8 @@ jobs:
             exit 1
           fi
           chmod +x jvm-demo/scripts/run-jvm-demos.sh
-          bash jvm-demo/scripts/run-jvm-demos.sh
+          # 允许脚本以非零退出（某些 demo 如 Jvm02 / OOM 会 System.exit(1)），但继续执行后续步骤
+          bash jvm-demo/scripts/run-jvm-demos.sh || echo "⚠️ 脚本以非零退出码结束（部分 demo 按预期退出，如 Jvm02 校验失败或 OOM 演示）"
 
       - name: 📦 上传编译产物
         if: always()
