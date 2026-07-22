@@ -1,4 +1,4 @@
-package com.zhiya.jvm.oom;
+package com.zhiya.oom;
 
 import java.util.ArrayList;
 import java.util.List;
