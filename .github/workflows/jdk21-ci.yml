@@ -1,11 +1,6 @@
 # =============================================================================
-# jdk21-ci.yml — jvm-demo JDK 21 专用 CI 公审
-# 落位：.github/workflows/jdk21-ci.yml
-# 用途：使用 JDK 21 编译并运行 jvm-demo 下的所有 Java 验证程序
-# 特点：
-#   - 纯 javac + java（零外部依赖，符合仓库风格）
-#   - 仅在 jvm-demo/ 或本文件变更时触发
-#   - 完整覆盖：runtime + classloading + object + sync + gc + oom
+# jdk21-ci.yml — jvm-demo JDK 21 + GC 矩阵 + 高级诊断
+# 支持多 GC 矩阵测试 + 强制 Heap Dump + NMT + JFR
 # =============================================================================
 
 name: jdk21-ci (jvm-demo)
@@ -22,8 +17,16 @@ on:
 
 jobs:
   build-and-verify-jdk21:
-    name: ☕ jvm-demo JDK21 全量公审
+    name: ☕ jvm-demo JDK21 [${{ matrix.gc }}]
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        gc: [G1, ZGC]
+      fail-fast: false
+
+    env:
+      GC_TYPE: ${{ matrix.gc }}
 
     steps:
       - name: 📥 拉取源码
@@ -39,35 +42,44 @@ jobs:
         run: |
           echo "==================== [ 1. 编译 jvm-demo 全模块 (JDK21) ] ===================="
           mkdir -p jvm-demo/target/classes
-
-          # 递归编译 com/zhiya 下所有子包的 .java 文件
           find jvm-demo -name "*.java" | xargs javac -encoding UTF-8 -d jvm-demo/target/classes
+          echo "✅ 编译通过 (共 $(find jvm-demo -name '*.java' | wc -l) 个文件)"
 
-          echo "✅ jvm-demo 全部编译通过 (共 $(find jvm-demo -name '*.java' | wc -l) 个源文件)"
-
-      - name: 🔍 运行带 JVM 配置的验证脚本（推荐方式）
+      - name: 🔍 运行带 JVM 配置的验证脚本（GC 矩阵）
         run: |
           echo "==================== [ 使用 jvm-demo/scripts/run-jvm-demos.sh 进行 JVM 配置验证 ] ===================="
+          if [ ! -f "jvm-demo/scripts/run-jvm-demos.sh" ]; then
+            echo "❌ 错误：脚本不存在！"
+            ls -R jvm-demo/scripts || true
+            exit 1
+          fi
           chmod +x jvm-demo/scripts/run-jvm-demos.sh
           bash jvm-demo/scripts/run-jvm-demos.sh
-
-          echo "==================== [ 3. 全部验证完成 ] ===================="
-          echo "✅ jvm-demo JDK 21 + JVM 配置验证通过！"
 
       - name: 📦 上传编译产物
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: jvm-demo-classes-jdk21
+          name: jvm-demo-classes-jdk21-${{ matrix.gc }}
           path: jvm-demo/target/classes
           retention-days: 7
-          if-no-files-found: warn
 
-      - name: 📊 上传 JVM 高级诊断产物 (JFR + 日志 + HeapDump + NMT)
+      - name: 📊 上传高级诊断产物 (JFR + GC日志 + HeapDump + NMT)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: jvm-demo-jdk21-diagnostics
-          path: /tmp/jvm-demo-logs
+          name: jvm-demo-jdk21-diagnostics-${{ matrix.gc }}
+          path: |
+            /tmp/jvm-demo-logs
+            /tmp/jvm-heap-dumps
+          retention-days: 14
+          if-no-files-found: warn
+
+      - name: 📝 上传 GC 矩阵摘要
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jvm-demo-summary-${{ matrix.gc }}
+          path: /tmp/jvm-demo-logs/summary-*.txt
           retention-days: 14
           if-no-files-found: warn
