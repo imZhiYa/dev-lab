@@ -84,3 +84,11 @@ jobs:
           path: /tmp/jvm-demo-logs/summary-*.txt
           retention-days: 14
           if-no-files-found: warn
+
+      - name: 📋 打印核心日志摘要（便于快速查看）
+        if: always()
+        run: |
+          echo "=== 打印 summary-${{ matrix.gc }}.txt ==="
+          cat /tmp/jvm-demo-logs/summary-${{ matrix.gc }}.txt 2>/dev/null || echo "summary 文件不存在"
+          echo "=== 最近 30 行日志 (G1/ZGC) ==="
+          tail -30 /tmp/jvm-demo-logs/*-${{ matrix.gc }}.log 2>/dev/null | head -60 || echo "无日志"
