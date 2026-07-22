@@ -9,6 +9,7 @@ _知识库讲原理，这里写代码验证_
 [![Powered by tech-knowledge-docs](https://img.shields.io/badge/powered_by-tech--knowledge--docs-blue?style=flat-square)](https://github.com/imZhiYa/tech-knowledge-docs)
 [![CI](https://github.com/imZhiYa/dev-lab/actions/workflows/verify-lab.yml/badge.svg)](https://github.com/imZhiYa/dev-lab/actions/workflows/verify-lab.yml)
 [![memory CI](https://github.com/imZhiYa/dev-lab/actions/workflows/virtual-memory-demo-ci.yml/badge.svg)](https://github.com/imZhiYa/dev-lab/actions/workflows/virtual-memory-demo-ci.yml)
+[![JVM CI](https://github.com/imZhiYa/dev-lab/actions/workflows/jdk21-ci.yml/badge.svg)](https://github.com/imZhiYa/dev-lab/actions/workflows/jdk21-ci.yml)
 
 ---
 
@@ -67,9 +68,25 @@ dev-lab/
 │   ├── CMakeLists.txt / Makefile # 标准道 + 零依赖快道
 │   └── README.md # 指路牌（详见下方能力矩阵与使用说明）
 │
+├── jvm-demo/ # ☕ JVM 配置 & OOM 演示（JDK 21 + GC 矩阵）
+│   ├── src/main/java/com/zhiya/
+│   │   ├── runtime/          # Jvm01 Runtime Data Area
+│   │   ├── classloading/     # Jvm02 Class Loading（含 System.exit 校验）
+│   │   ├── object/           # Jvm03 Object Layout & TLAB
+│   │   ├── sync/             # Jvm04 锁升级
+│   │   ├── gc/               # Jvm05/Jvm06 GC 日志 & 监控
+│   │   └── oom/              # 4 个 OOM 演示
+│   │       ├── HeapSpaceOom.java
+│   │       ├── MetaspaceOom.java   # ★ 核心：JDK 动态代理类无限生成
+│   │       ├── DirectBufferMemoryOom.java
+│   │       └── GcOverheadLimitOom.java
+│   ├── scripts/run-jvm-demos.sh   # 统一执行脚本（支持 G1/ZGC）
+│ 
+│
 ├── .github/workflows/
 │   ├── verify-lab.yml # 🔄 CI: 编译 + 公审 + 跑分 + 诊断
 │   └── virtual-memory-demo-ci.yml # 🧠 内存实验室 CI: make + ctest 双通道
+│   └── jdk21-ci.yml  # JDK21 + G1/ZGC 矩阵 CI
 │
 ├── .gitignore
 ├── LICENSE # 📜 MIT
@@ -127,6 +144,41 @@ dev-lab/
 | `vm06_copy_on_write.cpp` | fork + COW | 誊抄计数一页不差 + RSS 双账本（Linux VmRSS / macOS 独占页） |
 | `vm07_page_replacement.cpp` | 页面置换 | FIFO 的 Bélády 异常 vs LRU 的栈性质，CLOCK 近似收益 |
 | `vm08_ept_nested_walk.cpp` | EPT/NPT 虚拟化 | 双层翻译最坏 20~24 次、整箱打包压缩、TLB 救赎 |
+
+### ☕ JVM 演示（jdk21-ci · G1/ZGC 矩阵 + OOM 复现）**（当前最核心模块）**
+
+| 模块 | 重点 | 说明 |
+|---|---|---|
+| `jvm-demo/` | JDK 21 + GC 矩阵诊断 | 10 个 demo（6 正常 + 4 OOM），支持 G1 / ZGC |
+| `MetaspaceOom.java` | **★ 绝对核心演示**（用户声明核心） | JDK 动态代理类无限生成（使用独立 ClassLoader 强制每次生成新 $Proxy 类） |
+| `run-jvm-demos.sh` | 执行入口 | 脚本启动**立即**创建 summary + `trap` 兜底 + 4 个核心日志分析 section |
+| CI 产物 | `jvm-demo-summary-*` + diagnostics | NMT + JFR + HeapDump + **代理类增长日志**（重点观察） |
+
+**核心目标**（当前重点）：
+
+在 CI 日志中清晰看到以下**持续增长**（MetaspaceOom）：
+
+```
+已生成代理类: 1000
+已生成代理类: 2000
+已生成代理类: 3000
+...
+```
+
+**重要特性**（已修复的问题）：
+- **`MetaspaceOom` 是本仓库当前最核心的演示**（用户明确说“核心的是 MetaspaceOom”）
+- **所有 4 个 OOM demo 都会执行**：MetaOom → HeapOom → DirectOom → GcOverOom
+- 脚本使用 `set +e` 保护每个 java 调用，**即使** MetaspaceOom 触发 `System.exit(1)` 或 OOM，后面的 DirectOom / GcOverOom 仍然会继续跑
+- 无论中途崩溃，`summary-*.txt` 都会生成（脚本启动后**立即**创建 + `trap EXIT` 兜底）
+- summary 中会**专门提取** MetaspaceOom 的代理类增长日志
+- 已修复历史脚本错误（例如 `Proxy: unbound variable`），现在流程完整，所有 OOM demo 都能产生日志
+
+**最近修复重点**：
+- 修复了 `$Proxy: unbound variable` 导致脚本提前退出（其他 OOM 无法执行）的问题
+- 确保 DirectOom 和 GcOverOom 能正常执行
+- MetaspaceOom 增长日志现在能稳定出现在 summary 和打印摘要中
+
+并确保即使 OOM / System.exit 发生，`summary-*.txt` 也能完整生成（含 4 个分析 section）。
 
 ---
 
@@ -265,6 +317,41 @@ c++ -O2 -std=c++20 -Ivirtual-memory-demo/include \
 > ① Apple Silicon 用户态页是 **16KB** 不是 4KB，页数类数字天然除以 4；
 > ② CI/云宿主机普遍开 **THP 透明大页**，缺页计数会被压成 1/512 —— `vm04` 已内置 `MADV_NOHUGEPAGE` 校正器；
 > ③ macOS 上 free 后 RSS 不回落是 **MADV_FREE 惰性回收**设计，不是泄漏（`vm06` 同理：其 RSS 通道是独占页账本）。
+
+### 5. 跑 JVM 演示（JDK 21 + G1/ZGC 矩阵 + OOM 复现）**（重点推荐）**
+
+```bash
+cd jvm-demo
+
+# 编译
+mkdir -p target/classes
+find src -name "*.java" | xargs javac -encoding UTF-8 -d target/classes
+
+# 默认 G1 运行（**核心** MetaspaceOom 会最先执行）
+./scripts/run-jvm-demos.sh
+
+# ZGC 运行
+GC_TYPE=ZGC ./scripts/run-jvm-demos.sh
+
+# 查看核心结果（重点看代理类增长）
+cat /tmp/jvm-demo-logs/summary-G1.txt
+# 强烈建议搜索 "已生成代理类"
+```
+
+**核心亮点**（用户重点关注）：
+- **`MetaspaceOom` 是本仓库当前最核心的演示**（场景 1：JDK 动态代理类无限生成）
+- 脚本设计目标：**无论中途 OOM / System.exit，都能生成完整的 `summary-*.txt`**
+- 脚本最前面会用大 Banner 突出 MetaspaceOom
+- 最终 summary 会单独提取代理类增长日志
+- CI 同时验证 G1 和 ZGC
+
+**期望现象**（在日志中搜索）：
+```
+已生成代理类: 1000
+已生成代理类: 2000
+已生成代理类: 3000
+...
+```
 
 ---
 
