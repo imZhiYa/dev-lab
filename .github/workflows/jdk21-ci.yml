@@ -1,0 +1,66 @@
+# =============================================================================
+# jvm-demo CI 公审（JDK 21 专用通道）
+# 落位：dev-lab 仓库的 .github/workflows/jdk21-ci.yml
+# 与现有 verify-lab.yml (JDK8) / virtual-memory-demo-ci.yml 并存，互不影响
+# 触发：push/PR 触碰 jvm-demo 模块才跑（节省 CI 分钟数），也支持手动 workflow_dispatch
+# 用途：专门使用 JDK 21 编译 + 运行 jvm-demo（运行时数据区 + 类加载机制）
+# =============================================================================
+
+name: jdk21-ci (jvm-demo)
+
+on:
+  push:
+    paths:
+      - 'jvm-demo/**'
+      - '.github/workflows/jdk21-ci.yml'
+  pull_request:
+    paths:
+      - 'jvm-demo/**'
+  workflow_dispatch:
+
+jobs:
+  # ── JDK 21 通道：纯 javac + java 验证（与 repo 设计风格一致：零外部依赖） ──
+  build-and-verify-jdk21:
+    name: ☕ jvm-demo JDK21 公审
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 拉取 dev-lab 源码
+        uses: actions/checkout@v4
+
+      - name: ☕ 设置 JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          # jvm-demo 无 Maven，cache 可省略；如需可加 cache: 'gradle' 或删除
+
+      - name: 🛠️ 编译 jvm-demo 全量源码 (JDK 21)
+        run: |
+          echo "==================== [ 1. 编译 jvm-demo (JDK21) ] ===================="
+          mkdir -p jvm-demo/target/classes
+
+          # 递归编译所有 .java（runtime + classloading 等）
+          find jvm-demo -name "*.java" | xargs javac -encoding UTF-8 -d jvm-demo/target/classes
+
+          echo "✅ jvm-demo 编译通过 (JDK 21)"
+
+      - name: 🔍 自动化公审 jvm-demo（运行时数据区 + 类加载机制）
+        run: |
+          echo "==================== [ 2.1 运行 Jvm01RuntimeDataArea（运行时五分区）] ===================="
+          java -cp jvm-demo/target/classes com.zhiya.runtime.Jvm01RuntimeDataArea
+
+          echo "==================== [ 2.2 运行 Jvm02ClassLoadingMechanism（类加载机制）] ===================="
+          java -cp jvm-demo/target/classes com.zhiya.classloading.Jvm02ClassLoadingMechanism
+
+          echo "==================== [ 3. 验证完成 ] ===================="
+          echo "✅ jvm-demo JDK21 公审全部通过！"
+
+      - name: 📦 上传编译产物 (可选)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jvm-demo-classes-jdk21
+          path: jvm-demo/target/classes
+          retention-days: 7
+          if-no-files-found: warn
