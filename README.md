@@ -329,13 +329,11 @@ cat /tmp/jvm-demo-logs/summary-G1.txt
 
 ## 🧩 与 tech-knowledge-docs 的对应
 
-| 知识库文档 | 代码验证文件 / 模块 |
+每个验证文件背后都对应知识库（[tech-knowledge-docs](https://github.com/imZhiYa/tech-knowledge-docs)）的一篇原理推导：
+
+| 知识库文档 (tech-knowledge-docs) | 代码验证文件 / 模块 (dev-lab) |
 |---|---|
-| `aqs/01-AQS-State管理与CAS竞态.md` | `AqsLevel1StateAndContentionDemo.java` |
-| `aqs/02-CLH变体队列与公平锁非公平锁.md` | `AqsLevel2FairQueueDemo.java` |
-| `aqs/04-Condition条件队列与阻塞队列.md` | `AqsLevel4BoundedBufferDemo.java` 等 |
-| `aqs/05-中断取消与共享模式传播.md` | `AqsLevel5CancellationAndInterruptionDemo.java` 等 |
-| `aqs/06-CountDownLatch_CyclicBarrier_Phaser_Semaphore.md` | `CountDownLatchDemo` / `SemaphoreDemo` 等 |
+| `docs/03-concurrency/🔐 AQS 核心机制深度解析.md` | `aqs-demo/` 全量 12 个 AQS 机制与 JUC 协作原语 Demo |
 | `binary/01-二进制底层思维与位运算.md` | `BinaryUtils.java` + `LeetCodeBitwiseClassics.java` |
 | `binary/02-位图与布隆过滤器.md` | `BloomFilterBitMapGuard.java` |
 | `binary/03-一致性哈希环.md` | `ConsistentHashBinaryRing.java` |
@@ -344,7 +342,7 @@ cat /tmp/jvm-demo-logs/summary-G1.txt
 | `binary/06-HyperLogLog 基数估计.md` | `HyperLogLogBitwiseEstimator.java` |
 | `binary/07-雪花算法.md` | `SnowflakeBitwiseGenerator.java` |
 | `data-structures/🌳 树形数据结构.md` | `tree-demo/` 全部 9 个文件 |
-| `benchmark/JMH 微基准方法论.md` | `SyncVsAqsBenchmark.java` + `BitwiseBenchmark.java` |
+| `benchmark/JMH 微基准方法论.md` | `SyncVsAqsBenchmark.java` + `BitwiseBenchmark.java` + `TreeBenchmark.java` |
 | `os-memory/🧠 虚拟内存.md` | `virtual-memory-demo/` 全部 8 个实验 |
 
 ---
