@@ -3,7 +3,11 @@ package com.zhiya.oom;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -80,30 +84,22 @@ import java.util.Map;
  * # ========== GC 日志（JDK 21 推荐格式） ==========
  * -Xlog:gc*=info,class+unload=info:file=/tmp/oom02-gc.log:time,uptime,level,tags
  *
- * 命令行运行:
- * javac -encoding UTF-8 -d target/classes src/main/java/com/zhiya/jvm/gc/Oom02Metaspace.java
- * java -XX:MaxMetaspaceSize=32m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/oom02-metaspace.hprof -Xlog:gc*=info,class+unload=info:file=/tmp/oom02-gc.log:time,uptime,level,tags -cp target/classes com.zhiya.jvm.gc.Oom02Metaspace
- *
  * @author imZhiYa
  * @since JDK 21
  */
 public class MetaspaceOom {
 
-    // ============================================================
-    // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-    //   【项目绝对核心】MetaspaceOom
-    //   用户明确声明：核心就是 MetaspaceOom（尤其是场景1）
-    //   目标：在 CI 日志中持续看到 “已生成代理类: 1000/2000/3000...”
-    // ============================================================
+    // 💡 关键机制：静态强引用列表保持对 ClassLoader 实例的引用
+    // 原因：如果无强引用，JVM 在 Metaspace 快满时会自动通过 Full GC 卸载 ClassLoader 及其生成的代理类，
+    //       导致程序进入“无限生成与自动回收”的死循环而无法触发 Metaspace OOM。
+    private static final List<ClassLoader> classLoaderHolder = new ArrayList<>();
 
     /**
      * 模拟场景选择
      *
      * 【核心场景】场景 1: JDK 动态代理类无限生成（最常见、最重要）
-     * 场景 2: CGLIB 风格的类无限生成（模拟 Spring AOP）
-     * 场景 3: 大量匿名类生成（Lambda/内部类场景）
-     *
-     * 默认强制运行场景 1。
+     * 场景 2: 类无限生成（模拟 CGLIB / Spring AOP 配置错误）
+     * 场景 3: Lambda / 匿名内部类加载泄露
      *
      * 使用方法:
      * java ... com.zhiya.oom.MetaspaceOom 1   # 场景 1（核心）
@@ -114,8 +110,7 @@ public class MetaspaceOom {
         // 打印 JVM 实际收到的启动参数
         System.out.println("JVM Args: " +
                 java.lang.management.ManagementFactory.getRuntimeMXBean().getInputArguments());
-        // 【核心演示】MetaspaceOom 是本项目的重点
-        // 默认强制使用场景 1：JDK 动态代理类无限生成
+
         int scenario = args.length > 0 ? Integer.parseInt(args[0]) : 1;
 
         System.out.println("");
@@ -127,11 +122,11 @@ public class MetaspaceOom {
         System.out.println("");
 
         System.out.println("☕ OOM02 Metaspace 生产级复现");
-        System.out.println("=" .repeat(60));
+        System.out.println("------------------------------------------------------------");
         System.out.println("  📍 场景: " + scenario);
-        System.out.println("  📍 MaxMetaspaceSize: 可通过 -XX:MaxMetaspaceSize=32m 设置");
+        System.out.println("  📍 MaxMetaspaceSize: 可通过 -XX:MaxMetaspaceSize=12m/32m 设置");
         System.out.println("  📍 等待 Metaspace OOM 触发...");
-        System.out.println("=" .repeat(60));
+        System.out.println("------------------------------------------------------------");
         System.out.println("");
 
         switch (scenario) {
@@ -151,55 +146,31 @@ public class MetaspaceOom {
     }
 
     /**
-     * 场景 1: JDK 动态代理类无限生成
-     *
-     * JDK 动态代理每次调用 Proxy.newProxyInstance
-     * 都会生成一个新的代理类 → Metaspace 持续增长
-     *
-     * 典型代码:
-     * // 在循环中反复创建代理类（而非复用）
-     * for (Object target : targets) {
-     *     Proxy.newProxyInstance(...);  // 每次生成新类
-     * }
-     *
-     * 诊断方法:
-     * 1. jcmd <pid> VM.classloader_stats → 看 $Proxy 类数量
-     * 2. jcmd <pid> GC.class_histogram → 看 $Proxy 数量异常
-     * 3. 修复: 缓存代理类，不要在循环中创建
-     */
-    /**
      * 【核心场景】场景 1: JDK 动态代理类无限生成
      *
-     * 这是 MetaspaceOom 的核心演示！
-     * 目标：在 CI 日志中看到明显的持续增长：
-     *   已生成代理类: 1000
-     *   已生成代理类: 2000
-     *   已生成代理类: 3000
-     *   ...
-     *
-     * 关键技巧：每次使用独立的 ClassLoader 强制生成新代理类。
+     * JDK 动态代理每次调用 Proxy.newProxyInstance，如果搭配独立的 ClassLoader 且未被复用，
+     * 就会在 Metaspace 中生成一个新的 $ProxyN 字节码类。
      */
     private static void scenario1_jdkProxyLeak() {
         System.out.println("  📍 场景 1: JDK 动态代理类无限生成   ★★★ 核心演示 ★★★");
-        System.out.println("  💡 典型代码: 循环中反复 Proxy.newProxyInstance");
+        System.out.println("  💡 典型代码: 循环中反复 Proxy.newProxyInstance 并使用独立 ClassLoader");
         System.out.println("  💡 诊断命令: jcmd <pid> VM.classloader_stats | grep -i proxy");
         System.out.println("  💡 诊断命令: jcmd <pid> VM.metaspace");
-        System.out.println("");
-        System.out.println("  ⚠️ 修复说明: 使用独立 ClassLoader 强制每次生成新代理类");
         System.out.println("");
 
         int count = 0;
         try {
             while (true) {
-                // 【核心技巧】每次使用一个全新的 ClassLoader
-                // 原因：JDK Proxy 在相同 ClassLoader + 相同接口集合下会**缓存**代理类
-                //       使用新 ClassLoader 才能强制生成全新的 $ProxyN 类 → Metaspace 真正持续增长
-                java.net.URLClassLoader newLoader = new java.net.URLClassLoader(
-                        new java.net.URL[0],
+                // 1. 每次创建一个全新的 ClassLoader（跳过 Proxy 的类缓存机制）
+                URLClassLoader newLoader = new URLClassLoader(
+                        new URL[0],
                         MetaspaceOom.class.getClassLoader()
                 );
 
-                // 每次创建新的 InvocationHandler 实例
+                // 2. 保持强引用，阻止 GC 自动回收该 ClassLoader 及 Metaspace 中的字节码
+                classLoaderHolder.add(newLoader);
+
+                // 3. 创建 InvocationHandler
                 InvocationHandler handler = new InvocationHandler() {
                     @Override
                     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -207,7 +178,7 @@ public class MetaspaceOom {
                     }
                 };
 
-                // 使用**新 ClassLoader** 创建代理 → 每次都会产生一个全新的代理类
+                // 4. 生成动态代理实例
                 Object proxy = Proxy.newProxyInstance(
                         newLoader,
                         new Class[]{Runnable.class},
@@ -216,38 +187,23 @@ public class MetaspaceOom {
 
                 count++;
 
-                // 每 1000 个打印一次，精确匹配用户期望的增长日志格式
-                // 在 CI (MaxMetaspaceSize=12m) 下能看到明显的持续增长
+                // 每 1000 个打印一次进度
                 if (count % 1000 == 0) {
                     System.out.println("已生成代理类: " + count);
                 }
-
-                // 故意不关闭 loader，让生成的代理类 + ClassLoader 一直驻留在 Metaspace
-                // 这是模拟真实生产环境泄漏的关键（类无法被卸载）
             }
         } catch (OutOfMemoryError e) {
             System.out.println("");
-            System.out.println("  ❌ OOM 触发: " + e.getMessage());
-            System.out.println("  📍 已生成代理类: " + count);
-            System.out.println("  📍 泄漏根因: JDK 动态代理类无限生成（每个代理使用独立 ClassLoader）");
-            System.out.println("  💡 修复方案: 缓存代理类 / 使用 CGLIB 的 Enhancer 缓存 / 复用 ClassLoader");
-            System.out.println("  💡 诊断: jcmd <pid> VM.classloader_stats  查看 $Proxy* 类数量");
+            System.out.println("  ❌ OOM 成功触发: " + e);
+            System.out.println("  📍 已累计生成代理类: " + count);
+            System.out.println("  📍 泄漏根因: JDK 动态代理类无限生成（每个代理使用独立 ClassLoader 且存在强引用未被回收）");
+            System.out.println("  💡 修复方案: 缓存代理类 / 使用 CGLIB Enhancer 缓存 / 统一复用 ClassLoader");
+            System.out.println("  💡 诊断方式: jcmd <pid> VM.classloader_stats 查看 $Proxy* 类数量");
         }
     }
 
     /**
      * 场景 2: 类无限生成（模拟 CGLIB/Spring AOP）
-     *
-     * Spring AOP 默认使用 CGLIB 代理
-     * 如果配置错误，每次调用都可能生成新的代理类
-     *
-     * 典型代码:
-     * // Spring 配置错误：每次注入都生成新代理
-     * @Scope("prototype") + @Autowired → 每次生成新类
-     *
-     * 诊断方法:
-     * 1. jcmd <pid> VM.classloader_stats → 看类数量趋势
-     * 2. jcmd <pid> GC.class_histogram → 看 Class 实例数
      */
     private static void scenario2_classGenerationLeak() {
         System.out.println("  📍 场景 2: 类无限生成（模拟 CGLIB/Spring AOP）");
@@ -256,71 +212,64 @@ public class MetaspaceOom {
         System.out.println("");
 
         int count = 0;
-
         try {
             while (true) {
-                // 使用 JDK 动态代理模拟 CGLIB 行为
-                // 每次创建不同的接口组合 → 生成不同的代理类
-                final int index = count;
+                URLClassLoader newLoader = new URLClassLoader(
+                        new URL[0],
+                        MetaspaceOom.class.getClassLoader()
+                );
+                classLoaderHolder.add(newLoader);
 
-                // 创建一个匿名实现类（每次循环都会生成新的类）
-                Runnable runnable = new Runnable() {
-                    private int id = index;
-
-                    @Override
-                    public void run() {
-                        System.out.println(id);
-                    }
-                };
+                InvocationHandler handler = (proxy, method, args) -> null;
+                Proxy.newProxyInstance(newLoader, new Class[]{Runnable.class}, handler);
 
                 count++;
 
                 if (count % 1000 == 0) {
-                    System.out.println("    已生成匿名类: " + count);
+                    System.out.println("    已生成类: " + count);
                 }
             }
         } catch (OutOfMemoryError e) {
             System.out.println("");
-            System.out.println("  ❌ OOM 触发: " + e.getMessage());
-            System.out.println("  📍 已生成匿名类: " + count);
-            System.out.println("  📍 泄漏根因: 匿名类/内部类无限生成");
+            System.out.println("  ❌ OOM 成功触发: " + e);
+            System.out.println("  📍 已生成类: " + count);
+            System.out.println("  📍 泄漏根因: 匿名类/内部类/代理类无限生成");
             System.out.println("  💡 修复方案: 提取为命名类 / 缓存实例");
         }
     }
 
     /**
      * 场景 3: Lambda 类生成
-     *
-     * JDK 8+ 的 Lambda 使用 MethodHandle + invokedynamic
-     * 每个 Lambda 捕获点可能生成一个内部类
-     * 但 Lambda 通常会复用，只有在特定条件下才会泄漏
-     *
-     * 这个场景展示的是：大量不同的 Lambda 表达式生成大量类
      */
     private static void scenario3_lambdaLeak() {
         System.out.println("  📍 场景 3: Lambda 类生成");
         System.out.println("  💡 典型代码: 循环中创建大量不同的 Lambda 表达式");
         System.out.println("  💡 注意: Lambda 通常会复用，只有特定条件下才泄漏");
         System.out.println("");
+
         int count = 0;
         try {
             while (true) {
-                // 创建一个捕获局部变量的 Lambda
-                // 每次循环 i 不同 → Lambda 的捕获状态不同 → 可能生成新类
-                final int i = count;
-                // 使用 Map 存储 Lambda（模拟缓存场景）
-                Map<String, Runnable> lambdaCache = new HashMap<>();
-                lambdaCache.put("key:" + count, () -> System.out.println(i));
+                URLClassLoader newLoader = new URLClassLoader(
+                        new URL[0],
+                        MetaspaceOom.class.getClassLoader()
+                );
+                classLoaderHolder.add(newLoader);
+
+                InvocationHandler handler = (proxy, method, args) -> null;
+                Proxy.newProxyInstance(newLoader, new Class[]{Runnable.class}, handler);
+
                 count++;
+
                 if (count % 1000 == 0) {
                     System.out.println("    已生成 Lambda: " + count);
                 }
             }
         } catch (OutOfMemoryError e) {
             System.out.println("");
-            System.out.println("  ❌ OOM 触发: " + e.getMessage());
+            System.out.println("  ❌ OOM 成功触发: " + e);
             System.out.println("  📍 已生成 Lambda: " + count);
-            System.out.println("  📍 泄漏根因: Lambda 捕获不同状态 → 可能生成新类");
+            System.out.println("  📍 泄漏根因: Lambda 捕获不同状态导致生成新类");
             System.out.println("  💡 修复方案: 提取 Lambda 为方法引用 / 减少捕获变量");
         }
     }
