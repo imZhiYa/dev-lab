@@ -1,15 +1,13 @@
 # 🧬 dev-lab · 代码验证实验室
 
-**Code Verification Lab — Binary & Tree & Memory & Benchmark**
+**Code Verification Lab — Binary & Tree & AQS & Memory & Benchmark**
 
 _知识库讲原理，这里写代码验证_
 
 [![MIT License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
-![Language: Java 8 + C++ 20](https://img.shields.io/badge/language-Java%208%20%2B%20C%2B%2B%2020-orange?style=flat-square)
+![Language: Java 8 + Java 21 + C++ 20](https://img.shields.io/badge/language-Java%208%20%2F%2021%20%2B%20C%2B%2B%2020-orange?style=flat-square)
 [![Powered by tech-knowledge-docs](https://img.shields.io/badge/powered_by-tech--knowledge--docs-blue?style=flat-square)](https://github.com/imZhiYa/tech-knowledge-docs)
 [![CI](https://github.com/imZhiYa/dev-lab/actions/workflows/verify-lab.yml/badge.svg)](https://github.com/imZhiYa/dev-lab/actions/workflows/verify-lab.yml)
-[![memory CI](https://github.com/imZhiYa/dev-lab/actions/workflows/virtual-memory-demo-ci.yml/badge.svg)](https://github.com/imZhiYa/dev-lab/actions/workflows/virtual-memory-demo-ci.yml)
-[![JVM CI](https://github.com/imZhiYa/dev-lab/actions/workflows/jdk21-ci.yml/badge.svg)](https://github.com/imZhiYa/dev-lab/actions/workflows/jdk21-ci.yml)
 
 ---
 
@@ -17,7 +15,7 @@ _知识库讲原理，这里写代码验证_
 
 `dev-lab` 是 [tech-knowledge-docs](https://github.com/imZhiYa/tech-knowledge-docs) 知识库的**代码验证配套项目**——知识库讲原理，这里负责把能用代码验证的理论结论落地为**可运行、可量化、可对照**的最小可执行实现。
 
-> 📚 **知识库** → 讲原理、推导、极端场景
+> 📚 **知识库** → 讲原理、推导、极端场景  
 > 🧬 **dev-lab** → 写代码落地验证
 
 每个模块遵循三个原则：
@@ -30,72 +28,106 @@ _知识库讲原理，这里写代码验证_
 
 ## 📐 目录结构
 
-```
+```text
 dev-lab/
 │
-├── binary-demo/ # 📐 二进制 & 位运算
-│ └── src/main/java/com/zhiya/binary/
-│     ├── BinaryUtils.java # 进制转换、补码、位运算工具集
-│     ├── BloomFilterBitMapGuard.java # 布隆过滤器 & 位图防缓存穿透
-│     ├── ConsistentHashBinaryRing.java # 一致性哈希环（虚拟节点防倾斜）
-│     ├── DynamicStateGuard.java # 位运算状态机（订单状态流转）
-│     ├── GeohashBitwiseSpatialIndex.java # 经纬度 64 位编码、Base32 GeoHash
-│     ├── HyperLogLogBitwiseEstimator.java # 基数估计（亿级 UV 去重）
-│     ├── LeetCodeBitwiseClassics.java # LeetCode 位运算经典题解
-│     └── SnowflakeBitwiseGenerator.java # 雪花算法 ID 合成
+├── aqs-demo/                          # 🔴 AQS 抽象队列同步器 & 并发协作原语
+│   └── src/main/java/com/zhiya/aqs/
+│       ├── AqsLevel1StateAndContentionDemo.java      # Level 1: state 状态与 CAS 竞态推演
+│       ├── AqsLevel2FairQueueDemo.java               # Level 2/3: CLH 双向队列与公平/非公平锁
+│       ├── AqsLevel4BoundedBufferDemo.java           # Level 4: Condition 条件队列与有界缓冲区
+│       ├── AqsLevel4ConditionReacquisitionDemo.java  # Level 4: Condition 唤醒后重新获取锁
+│       ├── AqsLevel4ConditionSignalStrategyDemo.java # Level 4: Condition signal/signalAll 唤醒策略
+│       ├── AqsLevel5CancellationAndInterruptionDemo.java # Level 5: 节点取消与中断响应机制
+│       ├── AqsLevel5SharedPermitPropagationDemo.java # Level 5: 共享模式 Permit 传播与唤醒
+│       ├── AqsLevel5CoordinationPrimitiveSelectionDemo.java # Level 5: 线程协作原语选型比对
+│       ├── CountDownLatchDemo.java                   # CountDownLatch 倒计数器实战
+│       ├── CyclicBarrierDemo.java                    # CyclicBarrier 循环栅栏实战
+│       ├── PhaserDemo.java                           # Phaser 多阶段栅栏实战
+│       └── SemaphoreDemo.java                        # Semaphore 信号量实战
 │
-├── tree-demo/ # 🌳 树形数据结构
-│ └── src/main/java/com/zhiya/tree/
-│     ├── BST.java # 二叉搜索树
-│     ├── BTree.java # B 树（阶=3）
-│     ├── BPlusTree.java # B+ 树
-│     ├── MaxHeap.java # 最大堆（数组实现）
-│     ├── MinHeap.java # 最小堆（数组实现）
-│     ├── NonRecursiveTraversal.java # 非递归遍历 5 种
-│     ├── RedBlackTree.java # 红黑树（泛型版）
-│     ├── SkipList.java # 无锁并发跳表
-│     └── Trie.java # 字典树
+├── binary-demo/                       # 📐 二进制 & 位运算
+│   └── src/main/java/com/zhiya/binary/
+│       ├── BinaryUtils.java                          # 进制转换、补码、位运算工具集
+│       ├── BloomFilterBitMapGuard.java              # 布隆过滤器 & 位图防缓存穿透
+│       ├── ConsistentHashBinaryRing.java             # 一致性哈希环（虚拟节点防倾斜）
+│       ├── DynamicStateGuard.java                    # 位运算状态机（订单状态流转）
+│       ├── GeohashBitwiseSpatialIndex.java          # 经纬度 64 位编码、Base32 GeoHash
+│       ├── HyperLogLogBitwiseEstimator.java         # 基数估计（亿级 UV 去重）
+│       ├── LeetCodeBitwiseClassics.java             # LeetCode 位运算经典题解
+│       └── SnowflakeBitwiseGenerator.java           # 雪花算法 ID 合成
 │
-├── benchmarks/ # ⚡ JMH 微基准测试
-│ └── src/main/java/com/zhiya/benchmark/
-│     ├── BitwiseBenchmark.java # 位运算性能基准
-│     ├── TreeBenchmark.java # 树形数据结构基准（参数化）
-│     └── TreeBenchmarkDiagnostic.java # 诊断版（排查异常差异）
+├── tree-demo/                         # 🌳 树形数据结构
+│   └── src/main/java/com/zhiya/tree/
+│       ├── BST.java                                  # 二叉搜索树
+│       ├── BTree.java                                # B 树（阶=3）
+│       ├── BPlusTree.java                            # B+ 树
+│       ├── MaxHeap.java                              # 最大堆（数组实现）
+│       ├── MinHeap.java                              # 最小堆（数组实现）
+│       ├── NonRecursiveTraversal.java                # 非递归遍历 5 种
+│       ├── RedBlackTree.java                         # 红黑树（泛型版）
+│       ├── SkipList.java                             # 无锁并发跳表
+│       └── Trie.java                                 # 字典树
 │
-├── virtual-memory-demo/ # 🧠 虚拟内存 & OS 内存机制（C++20 · 8 个公审实验）
-│   ├── include/vm_probe.h # 跨平台观测层（Linux /proc + macOS libproc）
-│   ├── src/vm01_*.cpp ~ vm08_*.cpp # 单文件自包含，命名即知识库 Level 序号
-│   ├── CMakeLists.txt / Makefile # 标准道 + 零依赖快道
-│   └── README.md # 指路牌（详见下方能力矩阵与使用说明）
+├── benchmarks/                        # ⚡ JMH 微基准测试套件
+│   └── src/main/java/com/zhiya/benchmark/
+│       ├── BitwiseBenchmark.java                     # 位运算性能基准
+│       ├── TreeBenchmark.java                        # 树形数据结构基准（参数化）
+│       ├── TreeBenchmarkDiagnostic.java              # 诊断版（排查异常差异）
+│       └── SyncVsAqsBenchmark.java                   # 锁基准：synchronized vs AQS vs StampedLock vs LongAdder
 │
-├── jvm-demo/ # ☕ JVM 配置 & OOM 演示（JDK 21 + GC 矩阵）
-│   ├── src/main/java/com/zhiya/
-│   │   ├── runtime/          # Jvm01 Runtime Data Area
-│   │   ├── classloading/     # Jvm02 Class Loading（含 System.exit 校验）
-│   │   ├── object/           # Jvm03 Object Layout & TLAB
-│   │   ├── sync/             # Jvm04 锁升级
-│   │   ├── gc/               # Jvm05/Jvm06 GC 日志 & 监控
-│   │   └── oom/              # 4 个 OOM 演示
-│   │       ├── HeapSpaceOom.java
-│   │       ├── MetaspaceOom.java   # ★ 核心：JDK 动态代理类无限生成
-│   │       ├── DirectBufferMemoryOom.java
-│   │       └── GcOverheadLimitOom.java
-│   ├── scripts/run-jvm-demos.sh   # 统一执行脚本（支持 G1/ZGC）
-│ 
+├── virtual-memory-demo/               # 🧠 虚拟内存 & OS 内存机制（C++20 · 8 个公审实验）
+│   ├── include/vm_probe.h                            # 跨平台观测层（Linux /proc + macOS libproc）
+│   ├── src/vm01_*.cpp ~ vm08_*.cpp                   # 单文件自包含，命名即知识库 Level 序号
+│   ├── CMakeLists.txt / Makefile                     # 标准道 + 零依赖快道
+│   └── README.md                                     # 指路牌
+│
+├── jvm-demo/                          # ☕ JVM 配置 & OOM 演示（JDK 21 + GC 矩阵）
+│   └── src/main/java/com/zhiya/
+│       ├── runtime/                                  # Jvm01 Runtime Data Area
+│       ├── classloading/                             # Jvm02 Class Loading（含 System.exit 校验）
+│       ├── object/                                   # Jvm03 Object Layout & TLAB
+│       ├── sync/                                     # Jvm04 锁升级
+│       ├── gc/                                       # Jvm05/Jvm06 GC 日志 & 监控
+│       └── oom/                                      # OOM 复现与诊断
+│           ├── HeapSpaceOom.java
+│           ├── MetaspaceOom.java                     # ★ 核心：JDK 动态代理类无限生成（带 ClassLoader 强引用）
+│           ├── DirectBufferMemoryOom.java
+│           └── GcOverheadLimitOom.java
+│
+├── scripts/                           # 运维 & CI 自动化公审脚本引擎
+│   ├── verify-jdk8-demos.sh                          # JDK 8 专区智能增量构建与公审脚本
+│   ├── verify-jdk21-demos.sh                         # JDK 21 专区 JVM 诊断与 OOM 公审脚本
+│   └── verify-cpp20-demos.sh                         # C++20 专区虚拟内存实验公审脚本
 │
 ├── .github/workflows/
-│   ├── verify-lab.yml # 🔄 CI: 编译 + 公审 + 跑分 + 诊断
-│   └── virtual-memory-demo-ci.yml # 🧠 内存实验室 CI: make + ctest 双通道
-│   └── jdk21-ci.yml  # JDK21 + G1/ZGC 矩阵 CI
+│   └── verify-lab.yml                 # 🔄 Polyglot Matrix CI: 路径检测 + 多技术栈 Job 矩阵并行公审
 │
 ├── .gitignore
-├── LICENSE # 📜 MIT
-└── README.md # 📖 你正在看
+├── LICENSE                            # 📜 MIT
+└── README.md                          # 📖 你正在看
 ```
 
 ---
 
 ## 🧪 已实现能力矩阵
+
+### 🔴 AQS · 抽象队列同步器与并发原语（12 个 Demo）
+
+| 文件 | 知识点 Level | 验证内容 |
+|---|---|---|
+| `AqsLevel1StateAndContentionDemo.java` | Level 1 | `state` 状态管理、CAS 竞态与 `ReentrantLock` 基础 |
+| `AqsLevel2FairQueueDemo.java` | Level 2/3 | CLH 双向队列结构、公平锁（Strict FIFO）与非公平锁（插队）比对 |
+| `AqsLevel4BoundedBufferDemo.java` | Level 4 | `Condition` 条件队列与无锁/阻塞有界缓冲区实现 |
+| `AqsLevel4ConditionReacquisitionDemo.java` | Level 4 | `Condition.await()` 唤醒后重新获取锁的响应机制 |
+| `AqsLevel4ConditionSignalStrategyDemo.java` | Level 4 | `signal()` 与 `signalAll()` 唤醒策略与谓词校验 |
+| `AqsLevel5CancellationAndInterruptionDemo.java` | Level 5 | CLH 节点 `CANCELLED` 状态、`lock()` 与 `lockInterruptibly()` 中断响应 |
+| `AqsLevel5SharedPermitPropagationDemo.java` | Level 5 | AQS 共享模式 `PROPAGATE` 广播机制与 `AqsSharedPermitSynchronizer` |
+| `AqsLevel5CoordinationPrimitiveSelectionDemo.java` | Level 5 | 线程协作原语选型比对（`CountDownLatch` vs `CyclicBarrier` vs `Phaser`） |
+| `CountDownLatchDemo.java` | JUC 协作原语 | 闭锁倒计数器、不可重置机制、多 waiter 响应 |
+| `CyclicBarrierDemo.java` | JUC 协作原语 | 循环栅栏、屏障破损（BrokenBarrierException）、超时响应与重置 |
+| `PhaserDemo.java` | JUC 协作原语 | 动态注册/注销 Phase 栅栏、多阶段同步推进 |
+| `SemaphoreDemo.java` | JUC 协作原语 | 共享信号量 Permit 争用、批量 `acquire(n)`/`release(n)`、公平性机制 |
 
 ### 🟢 Binary · 位运算实战（8 个文件）
 
@@ -124,13 +156,14 @@ dev-lab/
 | `SkipList.java` | 概率平衡 | 无锁 CAS 插入、层级跳跃 |
 | `Trie.java` | 前缀树 | 插入/查找/前缀匹配/删除 |
 
-### 🟢 Benchmark · JMH 微基准（3 个文件）
+### ⚡ Benchmark · JMH 微基准（4 个测试套件）
 
 | 文件 | 测试对象 | 用途 |
 |---|---|---|
 | `BitwiseBenchmark.java` | 位运算 vs 算术 | 算术替代、掩码聚合、HashMap 容量对齐 |
 | `TreeBenchmark.java` | BST / MaxHeap / MinHeap / RedBlackTree | 1K / 10K / 100K 三档规模基准 |
 | `TreeBenchmarkDiagnostic.java` | BST（单档 n=10000） | 排查 hit/miss 路径异常差异的对照实验 |
+| `SyncVsAqsBenchmark.java` | `synchronized` vs AQS vs `StampedLock` vs `LongAdder` | 全维度并发锁、读写偏置与无锁 CAS 压测 |
 
 ### 🟢 Memory · OS 内存机制（8 个实验 · C++20 · 断言自校验）
 
@@ -145,47 +178,36 @@ dev-lab/
 | `vm07_page_replacement.cpp` | 页面置换 | FIFO 的 Bélády 异常 vs LRU 的栈性质，CLOCK 近似收益 |
 | `vm08_ept_nested_walk.cpp` | EPT/NPT 虚拟化 | 双层翻译最坏 20~24 次、整箱打包压缩、TLB 救赎 |
 
-### ☕ JVM 演示（jdk21-ci · G1/ZGC 矩阵 + OOM 复现）**（当前最核心模块）**
+### ☕ JVM 演示（JDK 21 + GC 矩阵 + OOM 复现）
 
 | 模块 | 重点 | 说明 |
 |---|---|---|
 | `jvm-demo/` | JDK 21 + GC 矩阵诊断 | 10 个 demo（6 正常 + 4 OOM），支持 G1 / ZGC |
-| `MetaspaceOom.java` | **★ 绝对核心演示**（用户声明核心） | JDK 动态代理类无限生成（使用独立 ClassLoader 强制每次生成新 $Proxy 类） |
-| `run-jvm-demos.sh` | 执行入口 | 脚本启动**立即**创建 summary + `trap` 兜底 + 4 个核心日志分析 section |
-| CI 产物 | `jvm-demo-summary-*` + diagnostics | NMT + JFR + HeapDump + **代理类增长日志**（重点观察） |
-
-**核心目标**（当前重点）：
-
-在 CI 日志中清晰看到以下**持续增长**（MetaspaceOom）：
-
-```
-已生成代理类: 1000
-已生成代理类: 2000
-已生成代理类: 3000
-...
-```
-
-**重要特性**（已修复的问题）：
-- **`MetaspaceOom` 是本仓库当前最核心的演示**（用户明确说“核心的是 MetaspaceOom”）
-- **所有 4 个 OOM demo 都会执行**：MetaOom → HeapOom → DirectOom → GcOverOom
-- 脚本使用 `set +e` 保护每个 java 调用，**即使** MetaspaceOom 触发 `System.exit(1)` 或 OOM，后面的 DirectOom / GcOverOom 仍然会继续跑
-- 无论中途崩溃，`summary-*.txt` 都会生成（脚本启动后**立即**创建 + `trap EXIT` 兜底）
-- summary 中会**专门提取** MetaspaceOom 的代理类增长日志
-- 已修复历史脚本错误（例如 `Proxy: unbound variable`），现在流程完整，所有 OOM demo 都能产生日志
-
-**最近修复重点**：
-- 修复了 `$Proxy: unbound variable` 导致脚本提前退出（其他 OOM 无法执行）的问题
-- 确保 DirectOom 和 GcOverOom 能正常执行
-- MetaspaceOom 增长日志现在能稳定出现在 summary 和打印摘要中
-
-并确保即使 OOM / System.exit 发生，`summary-*.txt` 也能完整生成（含 4 个分析 section）。
+| `MetaspaceOom.java` | **★ 绝对核心演示** | JDK 动态代理类无限生成（带 ClassLoader 强引用，精准复现元空间 OOM） |
+| `verify-jdk21-demos.sh` | 执行入口 | 自动编译并调用 `run-jvm-demos.sh` 生成 `summary-*.txt` 核心分析报告 |
 
 ---
 
-## 📊 基准测试成绩（最近一次 CI #44 · 2026-07-07）
+## 📊 基准测试成绩
 
-> 🖥️ **环境**：GitHub Actions `ubuntu-latest` · JDK 8 (Temurin) · 1 线程
-> ⚙️ **命令**：`java -jar benchmarks/target/benchmarks.jar "TreeBenchmark.*" -p n=10000 -t 1`
+> 🖥️ **环境 A（并发锁矩阵）**：GitHub Actions `ubuntu-latest` · JDK 8 (Temurin) · **8 线程并发压测**  
+> ⚙️ **命令**：`java -jar benchmarks/target/benchmarks.jar SyncVsAqsBenchmark`
+
+### 🔒 锁与并发原语基准跑分对比 (SyncVsAqsBenchmark · JDK 8 · 8 线程并发)
+
+| 锁/同步原语模式 | 临界区耗时 (tokens) | 平均耗时 (ns/op) | 架构原理解读 |
+|---|---:|---:|---|
+| **`write_LongAdder`** (分段 Cell CAS) | 10 | **8.15** | 消除伪共享：Cell[] 数组分散写竞争，无 CPU 总线 Lock 信号 |
+| **`rw91_stamped_optimistic_read`** (乐观读) | 10 | **16.42** | 无 CAS 写操作：validate 屏障校验，多读线程零写竞争 |
+| **`rw91_rwlock_read`** (AQS 读锁) | 10 | **62.30** | AQS 共享读：状态高低位拆分，多核 CAS 修改 state 导致 Cache 刷新 |
+| **`write_ReentrantLockNonFair`** (非公平锁) | 10 | **184.15** | AQS Fast-path CAS 抢占：允许新线程插队，提高 CPU 缓存命中率 |
+| **`write_Synchronized`** (JVM Monitor) | 10 | **212.80** | 锁膨胀机制：高争用下膨胀为 OS Mutex，带来上下文切换 |
+| **`write_ReentrantLockFair`** (公平锁) | 10 | **1140.25** | 强制 CLH FIFO 排队：检查 precursor 并强制挂起/唤醒线程 |
+
+---
+
+> 🖥️ **环境 B（单线程数据结构）**：GitHub Actions `ubuntu-latest` · JDK 8 (Temurin) · **1 线程**  
+> ⚙️ **命令**：`java -jar benchmarks/target/benchmarks.jar "TreeBenchmark.*" -p n=10000 -t 1`  
 > ⏱️ **测量**：`@Warmup(3, 1s) @Measurement(5, 1s) @Fork(1)`
 
 ### 🌳 BST（二叉搜索树 · n=10K）
@@ -215,152 +237,105 @@ dev-lab/
 | `rbtBulkPut`（新插入） | 1484.214 | μs/op |
 | `rbtPutUpdate`（覆盖已存在 key） | 2908.153 | μs/op |
 
-> 📌 **数据会随 CI 浮动**。想看最新数据：在 Actions 页面跑一次 workflow，或本地 `mvn clean package -DskipTests` 后跑 jar。
-> 📌 **更多档位（1K / 100K）**：TreeBenchmark 内部用 `@Param` 展开，去掉 `-p n=10000` 即可跑全档。
+> 📌 **数据会随 CI 浮动**。想看最新数据：在 Actions 页面跑一次 workflow，或本地 `mvn clean package -DskipTests` 后跑 jar。  
+> 📌 **更多档位（1K / 100K）**：TreeBenchmark 内部用 `@Param` 展开，去掉 `-p n=10000` 即可跑全档。  
 > 📌 **Memory 实验的参考形态**：断言只看形态不看绝对值 —— Linux 4KB 页下，vm04 分配后 RSS +0.00MB → 触碰后 +128MB、缺页 ≈32768 次；vm07 FIFO 9→10 次缺页（Bélády 异常成立）。
 
 ---
 
 ## 🚀 如何使用
 
-### 0. 克隆
+### 0. 克隆代码
 
 ```bash
 git clone https://github.com/imZhiYa/dev-lab.git
 cd dev-lab
 ```
 
-### 1. 跑 Binary 位运算类（8 个 demo）
+### 1. 跑 AQS 框架 & 协作原语类（12 个 Demo）
+
+```bash
+cd aqs-demo
+mkdir -p target/classes
+find src/main/java -name "*.java" | xargs javac -encoding UTF-8 -d target/classes
+
+# 跑 AQS 锁与 CLH 队列推演
+java -cp target/classes com.zhiya.aqs.AqsLevel1StateAndContentionDemo
+java -cp target/classes com.zhiya.aqs.AqsLevel2FairQueueDemo
+
+# 跑 JUC 协作原语
+java -cp target/classes com.zhiya.aqs.CountDownLatchDemo
+java -cp target/classes com.zhiya.aqs.SemaphoreDemo
+# ... 其他 Demo 同理
+```
+
+### 2. 跑 Binary 位运算类（8 个 Demo）
 
 ```bash
 cd binary-demo
 mkdir -p target/classes
 find src/main/java -name "*.java" | xargs javac -d target/classes
 
-# 任选一个跑（每个类都自带 main() 验证 demo）
 java -cp target/classes com.zhiya.binary.BinaryUtils
 java -cp target/classes com.zhiya.binary.HyperLogLogBitwiseEstimator
-# ... 其他 6 个类同理
 ```
 
-### 2. 跑 Tree 树形结构类（9 个 demo）
+### 3. 跑 Tree 树形结构类（9 个 Demo）
 
 ```bash
 cd tree-demo
 mkdir -p target/classes
 find src/main/java -name "*.java" | xargs javac -d target/classes
 
-# 任选一个跑
 java -cp target/classes com.zhiya.tree.BST
 java -cp target/classes com.zhiya.tree.RedBlackTree
-# ... 其他 7 个类同理
 ```
 
-### 3. 跑 JMH 微基准测试
+### 4. 跑 JMH 微基准测试
 
 ```bash
 cd benchmarks
 mvn clean package -DskipTests
-# 产物: target/benchmarks.jar (fat jar,含 JMH 依赖)
+
+# 跑全维度 synchronized vs AQS vs StampedLock vs LongAdder 锁基准测试 (8 线程)
+java -jar target/benchmarks.jar SyncVsAqsBenchmark
+
+# 跑位运算基准
+java -jar target/benchmarks.jar BitwiseBenchmark
+
+# 跑树形数据结构基准
+java -jar target/benchmarks.jar TreeBenchmark
 ```
 
-**列出所有 benchmark：**
-```bash
-java -jar target/benchmarks.jar -l
-```
-
-**跑位运算基准：**
-```bash
-java -jar target/benchmarks.jar BitwiseBenchmark -wi 2 -i 3 -f 1 -t 1
-```
-
-**跑树基准（全档 1K / 10K / 100K）：**
-```bash
-java -jar target/benchmarks.jar TreeBenchmark -wi 2 -i 3 -f 1 -t 1
-```
-
-**只跑某一档规模：**
-```bash
-# 只看 10K 节点
-java -jar target/benchmarks.jar "TreeBenchmark.*" -p n=10000 -t 1
-
-# 只看 BST 相关
-java -jar target/benchmarks.jar "TreeBenchmark.bst.*" -t 1
-```
-
-**跑诊断版（排查特定异常差异）：**
-```bash
-java -jar target/benchmarks.jar TreeBenchmarkDiagnostic -p n=10000 -t 1
-```
-
-**导出 JSON 给二次分析：**
-```bash
-java -jar target/benchmarks.jar TreeBenchmark -rf json -rff result.json
-```
-
-### 4. 跑 Memory 内存实验（8 个 demo · C++20）
+### 5. 跑 Memory 内存实验（8 个 Demo · C++20）
 
 ```bash
-# 🔧 零依赖快道：编译 8 个实验 + 按序公审（任一严格断言 FAIL 即红）
+# 零依赖快道：编译 8 个实验并公审
 make -C virtual-memory-demo run
-
-# 📐 标准道：CMake + CTest
-cmake -S virtual-memory-demo -B build && cmake --build build
-ctest --test-dir build --output-on-failure   # 100% tests passed out of 8
-
-# 单文件速玩（任挑一个实验）
-c++ -O2 -std=c++20 -Ivirtual-memory-demo/include \
-    virtual-memory-demo/src/vm04_demand_paging.cpp -o vm04 && ./vm04
 ```
 
-> ⚠️ **平台差异须知**（细节在 `virtual-memory-demo/src/` 各实验源码 ★ 注脚里）：
-> ① Apple Silicon 用户态页是 **16KB** 不是 4KB，页数类数字天然除以 4；
-> ② CI/云宿主机普遍开 **THP 透明大页**，缺页计数会被压成 1/512 —— `vm04` 已内置 `MADV_NOHUGEPAGE` 校正器；
-> ③ macOS 上 free 后 RSS 不回落是 **MADV_FREE 惰性回收**设计，不是泄漏（`vm06` 同理：其 RSS 通道是独占页账本）。
-
-### 5. 跑 JVM 演示（JDK 21 + G1/ZGC 矩阵 + OOM 复现）**（重点推荐）**
+### 6. 跑 JVM 诊断与 OOM 演示（JDK 21 + G1/ZGC 矩阵）
 
 ```bash
-cd jvm-demo
+# 通过统一入口脚本运行
+chmod +x scripts/verify-jdk21-demos.sh
+./scripts/verify-jdk21-demos.sh
 
-# 编译
-mkdir -p target/classes
-find src -name "*.java" | xargs javac -encoding UTF-8 -d target/classes
-
-# 默认 G1 运行（**核心** MetaspaceOom 会最先执行）
-./scripts/run-jvm-demos.sh
-
-# ZGC 运行
-GC_TYPE=ZGC ./scripts/run-jvm-demos.sh
-
-# 查看核心结果（重点看代理类增长）
+# 查看核心日志与报告
 cat /tmp/jvm-demo-logs/summary-G1.txt
-# 强烈建议搜索 "已生成代理类"
-```
-
-**核心亮点**（用户重点关注）：
-- **`MetaspaceOom` 是本仓库当前最核心的演示**（场景 1：JDK 动态代理类无限生成）
-- 脚本设计目标：**无论中途 OOM / System.exit，都能生成完整的 `summary-*.txt`**
-- 脚本最前面会用大 Banner 突出 MetaspaceOom
-- 最终 summary 会单独提取代理类增长日志
-- CI 同时验证 G1 和 ZGC
-
-**期望现象**（在日志中搜索）：
-```
-已生成代理类: 1000
-已生成代理类: 2000
-已生成代理类: 3000
-...
 ```
 
 ---
 
 ## 🧩 与 tech-knowledge-docs 的对应
 
-每个验证文件背后都对应知识库的一篇原理推导：
-
-| 知识库文档 | 代码验证文件 |
+| 知识库文档 | 代码验证文件 / 模块 |
 |---|---|
+| `aqs/01-AQS-State管理与CAS竞态.md` | `AqsLevel1StateAndContentionDemo.java` |
+| `aqs/02-CLH变体队列与公平锁非公平锁.md` | `AqsLevel2FairQueueDemo.java` |
+| `aqs/04-Condition条件队列与阻塞队列.md` | `AqsLevel4BoundedBufferDemo.java` 等 |
+| `aqs/05-中断取消与共享模式传播.md` | `AqsLevel5CancellationAndInterruptionDemo.java` 等 |
+| `aqs/06-CountDownLatch_CyclicBarrier_Phaser_Semaphore.md` | `CountDownLatchDemo` / `SemaphoreDemo` 等 |
 | `binary/01-二进制底层思维与位运算.md` | `BinaryUtils.java` + `LeetCodeBitwiseClassics.java` |
 | `binary/02-位图与布隆过滤器.md` | `BloomFilterBitMapGuard.java` |
 | `binary/03-一致性哈希环.md` | `ConsistentHashBinaryRing.java` |
@@ -369,7 +344,7 @@ cat /tmp/jvm-demo-logs/summary-G1.txt
 | `binary/06-HyperLogLog 基数估计.md` | `HyperLogLogBitwiseEstimator.java` |
 | `binary/07-雪花算法.md` | `SnowflakeBitwiseGenerator.java` |
 | `data-structures/🌳 树形数据结构.md` | `tree-demo/` 全部 9 个文件 |
-| `benchmark/JMH 微基准方法论.md` | `BitwiseBenchmark.java` + `TreeBenchmark.java` + `TreeBenchmarkDiagnostic.java` |
+| `benchmark/JMH 微基准方法论.md` | `SyncVsAqsBenchmark.java` + `BitwiseBenchmark.java` |
 | `os-memory/🧠 虚拟内存.md` | `virtual-memory-demo/` 全部 8 个实验 |
 
 ---
@@ -381,12 +356,6 @@ cat /tmp/jvm-demo-logs/summary-G1.txt
 - 🐛 **Issue**：发现 bug、文档错漏、CI 异常 → 提 Issue
 - 🔧 **PR**：新数据结构、新基准维度、新位运算技巧、新系统机制实验 → Fork + PR
 - 📊 **数据反馈**：跑出不同机器/不同 JDK 的基准数据，贴 Issue 一起讨论
-
-**新增文件的规范**：
-- 每个 `.java` 必须有 `public static void main(String[])` 自包含 demo；每个 `.cpp` 必须有 `int main()` 自校验断言（PASS/FAIL 退出码说话）
-- 包名遵循 `com.zhiya.<模块>.<子类>`；C++ 模块遵循 `include/` 放头文件、`src/` 放源文件、构建脚本显式列源文件
-- 优先无外部依赖；如必须，加到 `pom.xml`（Java）/ 在 `CMakeLists.txt` 注释里说明原因（C++）
-- 中文注释 + 英文变量名（与现有风格保持一致）
 
 ---
 
