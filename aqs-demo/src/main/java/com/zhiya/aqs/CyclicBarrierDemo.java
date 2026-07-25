@@ -19,7 +19,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * 场景：多线程分阶段计算，每个阶段结束都要互相等待，等齐了再进入下一阶段。
  *
- * 运行： java CyclicBarrierDemo
  */
 public class CyclicBarrierDemo {
 
