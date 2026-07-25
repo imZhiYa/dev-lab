@@ -1,23 +1,64 @@
-name: 🚀 dev-lab 闭门自查持续构建流水线 (全量自动化终极免检版)
+name: 🚀 dev-lab 异构语言与多 JDK 持续集成流水线 (Polyglot Matrix CI)
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "feat/*", "feature/*" ]
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
     inputs:
-      threads:
-        description: '指定 JMH 并发压测线程数 (支持网页端表单动态调配)'
-        required: true
-        default: '1'
+      force_all:
+        description: '是否强制开启全量回归测试 (true/false)'
+        required: false
+        default: 'false'
 
 jobs:
-  build-and-verify-jdk8:
+  # =========================================================================
+  # 阶段 1：增量路径过滤器 (Path Filter) —— 精准识别代码变更所属的技术栈专区
+  # =========================================================================
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      java8: ${{ steps.filter.outputs.java8 }}
+      java21: ${{ steps.filter.outputs.java21 }}
+      cpp20: ${{ steps.filter.outputs.cpp20 }}
+    steps:
+      - name: 📥 拉取代码 (获取完整 Git 历史用于 paths-filter 比对)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔍 路径变更检测 (按技术栈/工具链归类)
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            java8:
+              - 'binary-demo/**'
+              - 'tree-demo/**'
+              - 'aqs-demo/**'
+              - 'benchmark-demo/**'
+              - 'benchmarks/**'
+              - 'scripts/verify-jdk8-demos.sh'
+            java21:
+              - 'jvm-demo/**'
+              - 'scripts/verify-jdk21-demos.sh'
+            cpp20:
+              - 'virtual-memory-demo/**'
+              - 'scripts/verify-cpp20-demos.sh'
+
+  # =========================================================================
+  # 阶段 2 - 专区 A: JDK 8 验证矩阵 (binary-demo / tree-demo / aqs-demo / benchmark-demo)
+  # =========================================================================
+  verify-jdk8:
+    needs: detect-changes
+    if: ${{ github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || needs.detect-changes.outputs.java8 == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - name: 📥 拉取 dev-lab 完整源码
-        uses: actions/checkout@v3
+      - name: 📥 拉取 dev-lab 完整源码 (包含 git 历史用于 diff 比对)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: ☕ 设置 JDK 8 生产级云端验证环境
         uses: actions/setup-java@v3
@@ -26,178 +67,65 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      # =============================================
-      # 第一部分：编译（binary-demo / tree-demo / aqs-demo）
-      # =============================================
-      - name: 🟢 1. 编译 binary-demo & tree-demo & aqs-demo 全量源码
+      - name: 🧪 智能增量公审 JDK 8 演练模块 (binary / tree / aqs)
         run: |
-          echo "==================== [ 1. 递归寻址编译 binary-demo + tree-demo + aqs-demo ] ===================="
-          mkdir -p binary-demo/target/classes
-          mkdir -p tree-demo/target/classes
-          mkdir -p aqs-demo/target/classes
+          chmod +x scripts/verify-jdk8-demos.sh
+          IS_MAIN_PUSH="${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}"
+          FORCE_ALL_INPUT="${{ github.event.inputs.force_all }}"
+          
+          if [ "$FORCE_ALL_INPUT" = "true" ] || [ "$IS_MAIN_PUSH" = "true" ]; then
+            ./scripts/verify-jdk8-demos.sh true
+          else
+            ./scripts/verify-jdk8-demos.sh false
+          fi
 
-          # 编译 binary-demo
-          find binary-demo -name "*.java" | xargs javac -encoding UTF-8 -d binary-demo/target/classes
-
-          # 编译 tree-demo
-          find tree-demo -name "*.java" | xargs javac -encoding UTF-8 -d tree-demo/target/classes
-
-          # 编译 aqs-demo
-          find aqs-demo -name "*.java" | xargs javac -encoding UTF-8 -d aqs-demo/target/classes
-
-          echo "✅ binary-demo & tree-demo & aqs-demo 全量编译通过"
-
-      # =============================================
-      # 第二部分：binary-demo（二进制 & 位运算）
-      # =============================================
-      - name: 🔵 2. 自动化公审 binary-demo（二进制实战类库）
+      - name: 🟣 编译基准镜像与执行 JMH 跑分
         run: |
-          echo "==================== [ 2.1 载入 BinaryUtils 纯手工推演总线 ] ===================="
-          java -cp binary-demo/target/classes com.zhiya.binary.BinaryUtils
-
-          echo "==================== [ 2.2 载入 DynamicStateGuard 订单权限状态流转 ] ===================="
-          java -cp binary-demo/target/classes com.zhiya.binary.DynamicStateGuard
-
-          echo "==================== [ 2.3 载入 LeetCodeBitwiseClassics 力扣极客位操演示 ] ===================="
-          java -cp binary-demo/target/classes com.zhiya.binary.LeetCodeBitwiseClassics
-
-          echo "==================== [ 2.4 载入 BloomFilterBitMapGuard 防穿透布隆大闸 ] ===================="
-          java -cp binary-demo/target/classes com.zhiya.binary.BloomFilterBitMapGuard
-
-          echo "==================== [ 2.5 载入 SnowflakeBitwiseGenerator 雪花算法 ID 合成 ] ===================="
-          java -cp binary-demo/target/classes com.zhiya.binary.SnowflakeBitwiseGenerator
-
-          echo "==================== [ 2.6 载入 HyperLogLogBitwiseEstimator 亿级去重 ] ===================="
-          java -cp binary-demo/target/classes com.zhiya.binary.HyperLogLogBitwiseEstimator
-
-          echo "==================== [ 2.7 载入 GeohashBitwiseSpatialIndex 空间交织寻址 ] ===================="
-          java -cp binary-demo/target/classes com.zhiya.binary.GeohashBitwiseSpatialIndex
-
-          echo "==================== [ 2.8 载入 ConsistentHashBinaryRing 一致性哈希环 ] ===================="
-          java -cp binary-demo/target/classes com.zhiya.binary.ConsistentHashBinaryRing
-
-      # =============================================
-      # 第三部分：tree-demo（树形数据结构）+ 跳表
-      # =============================================
-      - name: 🟠 3. 自动化公审 tree-demo（树结构 & 跳表）
-        run: |
-          CP=tree-demo/target/classes
-
-          echo "==================== [ 3.1 载入 BST 二叉搜索树 ] ===================="
-          java -cp $CP com.zhiya.tree.BST
-
-          echo "==================== [ 3.2 载入 RedBlackTree 红黑树（泛型版）] ===================="
-          java -cp $CP com.zhiya.tree.RedBlackTree
-
-          echo "==================== [ 3.3 载入 NonRecursiveTraversal 非递归遍历 5 种 ] ===================="
-          java -cp $CP com.zhiya.tree.NonRecursiveTraversal
-
-          echo "==================== [ 3.4 载入 MaxHeap 最大堆 ] ===================="
-          java -cp $CP com.zhiya.tree.MaxHeap
-
-          echo "==================== [ 3.5 载入 MinHeap 最小堆 ] ===================="
-          java -cp $CP com.zhiya.tree.MinHeap
-
-          echo "==================== [ 3.6 载入 Trie 字典树 ] ===================="
-          java -cp $CP com.zhiya.tree.Trie
-
-          echo "==================== [ 3.7 载入 BTree B 树 ] ===================="
-          java -cp $CP com.zhiya.tree.BTree
-
-          echo "==================== [ 3.8 载入 BPlusTree B+ 树 ] ===================="
-          java -cp $CP com.zhiya.tree.BPlusTree
-
-          echo "==================== [ 3.9 载入 SkipList 无锁并发跳表 CAS 推演 ] ===================="
-          java -cp $CP com.zhiya.tree.SkipList
-
-      # =============================================
-      # 第四部分：aqs-demo（AQS 并发框架与同步原语）
-      # =============================================
-      - name: 🔴 4. 自动化公审 aqs-demo（AQS 同步器与并发原语实战）
-        run: |
-          CP=aqs-demo/target/classes
-
-          echo "==================== [ 4.1 载入 Level 1: State 状态与 CAS 竞态推演 ] ===================="
-          java -cp $CP com.zhiya.aqs.AqsLevel1StateAndContentionDemo
-
-          echo "==================== [ 4.2 载入 Level 2/3: CLH 双向队列与公平/非公平锁 ] ===================="
-          java -cp $CP com.zhiya.aqs.AqsLevel2FairQueueDemo
-
-          echo "==================== [ 4.3 载入 Level 4: Condition 条件队列与有界缓冲区 ] ===================="
-          java -cp $CP com.zhiya.aqs.AqsLevel4BoundedBufferDemo
-
-          echo "==================== [ 4.4 载入 Level 4: Condition 唤醒后重新获取锁 ] ===================="
-          java -cp $CP com.zhiya.aqs.AqsLevel4ConditionReacquisitionDemo
-
-          echo "==================== [ 4.5 载入 Level 4: Condition signal / signalAll 唤醒策略 ] ===================="
-          java -cp $CP com.zhiya.aqs.AqsLevel4ConditionSignalStrategyDemo
-
-          echo "==================== [ 4.6 载入 Level 5: 节点取消与中断响应机制 ] ===================="
-          java -cp $CP com.zhiya.aqs.AqsLevel5CancellationAndInterruptionDemo
-
-          echo "==================== [ 4.7 载入 Level 5: 共享模式 Permit 传播与唤醒 ] ===================="
-          java -cp $CP com.zhiya.aqs.AqsLevel5SharedPermitPropagationDemo
-
-          echo "==================== [ 4.8 载入 Level 5: 线程协作原语选型比对 ] ===================="
-          java -cp $CP com.zhiya.aqs.AqsLevel5CoordinationPrimitiveSelectionDemo
-
-          echo "==================== [ 4.9 载入 CountDownLatch 闭锁实战推演 ] ===================="
-          java -cp $CP com.zhiya.aqs.CountDownLatchDemo
-
-          echo "==================== [ 4.10 载入 CyclicBarrier 循环栅栏实战推演 ] ===================="
-          java -cp $CP com.zhiya.aqs.CyclicBarrierDemo
-
-          echo "==================== [ 4.11 载入 Phaser 多阶段栅栏实战推演 ] ===================="
-          java -cp $CP com.zhiya.aqs.PhaserDemo
-
-          echo "==================== [ 4.12 载入 Semaphore 信号量实战推演 ] ===================="
-          java -cp $CP com.zhiya.aqs.SemaphoreDemo
-
-      # =============================================
-      # 第五部分：JMH 基准测试
-      # =============================================
-      - name: 🟣 5. 基准沙盘打包：构建 BitwiseBenchmark 独立公审镜像
-        run: |
-          echo "==================== [ 5. 执行 Maven 打包构建 ] ===================="
-          cd benchmarks
+          BM_DIR=$([ -d "benchmark-demo" ] && echo "benchmark-demo" || echo "benchmarks")
+          cd $BM_DIR
           mvn clean package -DskipTests
-          echo "✅ 基准压测独立镜像在 JDK 8 下构建成功！包体存放于: benchmarks/target/benchmarks.jar"
+          java -jar target/benchmarks.jar -wi 1 -i 3 -f 1 -t 1
+          java -jar target/benchmarks.jar "TreeBenchmark.*" -p n=10000 -t 1
 
-      - name: 🟡 6. 终极验证：启动 JMH 纳秒级微观基准跑分 (支持动态控制流)
-        run: |
-          echo "==================== [ 6. 拉起 JMH 纳秒级跑分比对 ] ===================="
-          java -jar benchmarks/target/benchmarks.jar -wi 1 -i 3 -f 1 -t ${{ github.event.inputs.threads || 1 }}
+  # =========================================================================
+  # 阶段 2 - 专区 B: JDK 21 验证矩阵 (jvm-demo: 虚拟线程 / GC / JFR / NMT)
+  # =========================================================================
+  verify-jdk21:
+    needs: detect-changes
+    if: ${{ github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || needs.detect-changes.outputs.java21 == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 拉取 dev-lab 源码
+        uses: actions/checkout@v4
 
-      # =============================================
-      # 第六部分：树形数据结构微基准 (新增 · TreeBenchmark)
-      # =============================================
-      # 注：TreeBenchmark 内部通过 @Param("1000"/"10000"/"100000") 自动展开 3 档数据规模
-      #     -wi 2 -i 3 略低于 BitwiseBenchmark 以保证 CI 总时长可控 (5 分钟左右)
-      #     与第 5 步的 BitwiseBenchmark 走同一份打包产物，零额外构建开销
-      # =============================================
-      - name: 🌳 7. 树形数据结构 JMH 纳秒级压测 (BST / MaxHeap / MinHeap / RedBlackTree · 1K~100K)
-        run: |
-          echo "==================== [ 7. 拉起树基准 TreeBenchmark 跑分 ] ===================="
-          java -jar benchmarks/target/benchmarks.jar "TreeBenchmark.*" -p n=10000 -t 1
-
-      - name: 🔬 8. 诊断 TreeBenchmark (排查 hit/miss 13x 差异根因)
-        run: |
-          echo "==================== [ 8. 拉起诊断版 TreeBenchmarkDiagnostic 跑分 ] ===================="
-          # 把完整输出 (含 stack profiler) 重定向到文件,避免污染 GitHub Actions log
-          java -jar benchmarks/target/benchmarks.jar TreeBenchmarkDiagnostic -p n=10000 -prof stack >diag-output.txt 2>&1
-          echo "==================== [ 8. 诊断 stdout 调试部分 (hit/miss 集内容,验证 H1) ] ===================="
-          grep "^\[DIAG\]" diag-output.txt || echo "(无 [DIAG] 输出,看 diag-output.txt 附件)"
-          echo "==================== [ 8. 诊断 benchmark 结果表 (验证 H2/H3/H4) ] ===================="
-          # 关键: JMH 分数行包含 ns/op 关键词,不能漏
-          grep -E "diag[0-9]_|Benchmark|ns/op" diag-output.txt | head -30
-          echo "==================== [ 8. Stack profiler 完整 CPU 分布 (tail -100 of diag-output.txt) ] ===================="
-          tail -100 diag-output.txt
-
-      - name: 📦 9. 上传诊断输出为 Artifact (你可以下载到本地慢慢看)
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: ☕ 设置 JDK 21 现代化云端验证环境
+        uses: actions/setup-java@v3
         with:
-          name: diag-output
-          path: benchmarks/diag-output.txt
-          retention-days: 7
-          if-no-files-found: warn
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: 🚀 执行 jvm-demo 高版本 JVM 特性与诊断公审
+        run: |
+          chmod +x scripts/verify-jdk21-demos.sh
+          ./scripts/verify-jdk21-demos.sh
+
+  # =========================================================================
+  # 阶段 2 - 专区 C: C++20 验证矩阵 (virtual-memory-demo: 虚拟内存硬核验证)
+  # =========================================================================
+  verify-cpp20:
+    needs: detect-changes
+    if: ${{ github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || needs.detect-changes.outputs.cpp20 == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 拉取 dev-lab 源码
+        uses: actions/checkout@v4
+
+      - name: 🛠️ 检查 C++20 编译器环境 (GCC / Clang)
+        run: |
+          g++ --version
+          make --version
+
+      - name: 🧠 编译并公审 virtual-memory-demo 8 大硬核内存实验
+        run: |
+          chmod +x scripts/verify-cpp20-demos.sh
+          ./scripts/verify-cpp20-demos.sh
