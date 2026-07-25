@@ -1,6 +1,18 @@
 package com.zhiya.aqs;
+
 import java.util.concurrent.Phaser;
 
+/**
+ * Phaser 并发协调演示。
+ *
+ * 演示主题：可重用的多阶段同步屏障，支持动态注册和注销参与者。
+ * 演示目标：
+ * - Phaser 通过阶段(phase)管理多轮同步，每个阶段对应一个屏障
+ * - 线程调用 arriveAndAwaitAdvance() 在当前阶段阻塞，等待所有参与者到达
+ * - 参与者可动态注册(register)或注销(arriveAndDeregister)
+ * - 所有参与者到达屏障后，阶段自动递进，继续下一阶段
+ * - 当没有参与者时 Phaser 终止(terminated)，避免无限等待
+ */
 public class PhaserDemo {
 
     public static void main(String[] args) {
