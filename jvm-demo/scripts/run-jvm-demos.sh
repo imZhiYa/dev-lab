@@ -3,90 +3,6 @@
 # =============================================================================
 # jvm-demo/scripts/run-jvm-demos.sh
 # =============================================================================
-#
-# 【脚本作用 (Purpose)】
-#   1. 运行 jvm-demo 项目中的 10 个 JVM 演示程序（6 个正常示例 + 4 个 OOM 示例）
-#   2. 支持 G1 和 ZGC 两种垃圾收集器矩阵测试（通过 GC_TYPE 环境变量控制）
-#   3. 收集完整的诊断数据：
-#        - GC 日志（-Xlog:gc*）
-#        - JFR 飞行记录（settings=profile）
-#        - Native Memory Tracking（NMT=summary）
-#        - OOM 时强制生成 Heap Dump
-#   4. **核心保障**：无论脚本中途失败（包括 System.exit(1)），都会生成 summary 文件
-#   5. 最后自动生成结构化的“核心日志分析报告”（严格包含用户要求的 4 个 section）
-#
-# 【为什么需要这个脚本？】
-#   - 早期版本因为 set -e + Jvm02ClassLoadingMechanism 里的 System.exit(1)，
-#     导致 summary-*.txt 为空，GitHub Actions artifact 上传失败。
-#   - 本脚本通过以下机制解决：
-#     * 脚本启动后**立即**创建 summary 文件
-#     * 使用 trap 捕获所有退出信号更新最终状态
-#     * 每个 java 调用用 set +e 保护，不让单个 demo 失败中断整个流程
-#
-# 【使用方式 (How to Use)】
-#
-# 1. 本地运行（推荐先编译）
-#    --------------------------------------------------
-#    # 编译（必须）
-#    mkdir -p jvm-demo/target/classes
-#    find jvm-demo -name "*.java" | xargs javac -encoding UTF-8 -d jvm-demo/target/classes
-#
-#    # 默认使用 G1
-#    ./jvm-demo/scripts/run-jvm-demos.sh
-#
-#    # 使用 ZGC
-#    GC_TYPE=ZGC ./jvm-demo/scripts/run-jvm-demos.sh
-#
-#    # 运行后查看结果
-#    ls -lh /tmp/jvm-demo-logs/
-#    cat /tmp/jvm-demo-logs/summary-G1.txt
-#
-# 2. 在 GitHub Actions 中使用（当前主要用途）
-#    --------------------------------------------------
-#    由 .github/workflows/jdk21-ci.yml 调用：
-#      env:
-#        GC_TYPE: ${{ matrix.gc }}   # G1 或 ZGC
-#      run: |
-#        bash jvm-demo/scripts/run-jvm-demos.sh || echo "⚠️ 部分 demo 按预期退出"
-#
-#    工作流会用 if: always() 上传：
-#      - /tmp/jvm-demo-logs/summary-*.txt
-#      - /tmp/jvm-demo-logs/*.log
-#      - /tmp/jvm-heap-dumps/*.hprof
-#      - JFR 文件
-#
-# 3. 单独运行某个 demo（调试用）
-#    --------------------------------------------------
-#    可以临时注释掉 run() 调用，只保留想调试的那个。
-#
-# 【输出文件说明】
-#   /tmp/jvm-demo-logs/
-#     ├── summary-G1.txt          ← 核心分析报告（必须上传）
-#     ├── summary-ZGC.txt
-#     ├── Jvm01-G1.log
-#     ├── Jvm02-G1.log            ← Jvm02 预期会失败（System.exit）
-#     ├── Jvm01-G1.jfr
-#     └── ...
-#
-#   /tmp/jvm-heap-dumps/
-#     └── HeapOom-G1.hprof        ← OOM 时自动生成
-#
-# 【重要配置】
-#   - Jvm02 故意标记为 expect_fail=true（因为它包含多个 System.exit(1) 校验）
-#   - OOM 演示全部开启 -XX:+HeapDumpOnOutOfMemoryError
-#   - 所有 java 调用都使用 eval + set +e 保护
-#
-# 【核心演示重点】
-#   ★ MetaspaceOom 是本次演示的绝对核心！
-#   重点观察场景1：JDK 动态代理类无限生成
-#   预期在日志中看到：
-#     已生成代理类: 1000
-#     已生成代理类: 2000
-#     已生成代理类: 3000
-#     ...
-#   诊断命令：jcmd <pid> VM.classloader_stats
-#
-# =============================================================================
 
 set -euo pipefail
 
@@ -158,11 +74,6 @@ echo "=================================================="
 echo "🚀 jvm-demo JDK 21 + GC矩阵 + 诊断 (GC=$GC_TYPE)"
 echo "=================================================="
 
-# =====================================================
-# ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-#          【绝对核心】MetaspaceOom 演示
-# ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-# =====================================================
 echo ""
 echo "╔════════════════════════════════════════════════════════════════════════════╗"
 echo "║                                                                            ║"
@@ -246,11 +157,6 @@ run "Jvm06" "com.zhiya.gc.Jvm06MonitoringDemo" "-Xms128m -Xmx128m -Xlog:gc*" fal
 # ===================== OOM 演示程序 =====================
 echo "=== OOM ==="
 
-# =====================================================
-# ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-#          【绝对核心】MetaspaceOom 演示
-#          用户明确声明：核心是 MetaspaceOom
-# =====================================================
 echo ""
 echo "╔════════════════════════════════════════════════════════════════════════════╗"
 echo "║                                                                            ║"
@@ -262,7 +168,7 @@ echo "║   场景 1：JDK 动态代理类无限生成（本项目最核心演�
 echo "║   目标现象：持续打印「已生成代理类: 1000 / 2000 / 3000 ...」               ║"
 echo "║                                                                            ║"
 echo "║   诊断重点：                                                             ║"
-echo "║     • jcmd <pid> VM.classloader_stats  (看 $Proxy* 类数量)               ║"
+echo "║     • jcmd <pid> VM.classloader_stats  (看 \$Proxy* 类数量)               ║"
 echo "║     • jcmd <pid> VM.metaspace                                            ║"
 echo "║                                                                            ║"
 echo "╚════════════════════════════════════════════════════════════════════════════╝"
