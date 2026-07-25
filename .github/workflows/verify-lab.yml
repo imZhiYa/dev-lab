@@ -2,7 +2,7 @@ name: 🚀 dev-lab 异构语言与多 JDK 持续集成流水线 (Polyglot Matrix
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "feat/*", "feature/*" ]  # 👈 允许 feat/ 开头的分支推送时自动触发
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
