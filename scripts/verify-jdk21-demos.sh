@@ -23,3 +23,29 @@ else
     echo "❌ 找不到 jvm-demo/scripts/run-jvm-demos.sh 脚本！"
     exit 1
 fi
+
+# 3. 编译 thread-demo 全量源码 (JDK 21 - 虚拟线程 / 线程池 / 响应式)
+echo ""
+echo "================================================================="
+echo "🧵 启动 thread-demo 线程池与虚拟线程实验公审"
+echo "================================================================="
+echo "🔨 正在编译 thread-demo 全量源码..."
+mkdir -p thread-demo/target/classes
+find thread-demo -name "*.java" | xargs javac -encoding UTF-8 -d thread-demo/target/classes
+echo "✅ thread-demo 全量源码编译成功！"
+
+# 4. 运行 thread-demo 各实验
+echo "🧪 运行 VirtualThreadDemo..."
+java -cp thread-demo/target/classes com.zhiya.VirtualThreadDemo
+
+echo ""
+echo "🧪 运行 ThreadPoolLabs..."
+java -cp thread-demo/target/classes com.zhiya.ThreadPoolLabs
+
+echo ""
+echo "🧪 运行 ReactiveNoDepsDemo (背压 + IO隔离实验)..."
+java -cp thread-demo/target/classes com.zhiya.ReactiveNoDepsDemo
+
+echo ""
+echo "✅ thread-demo 全部实验执行完毕！"
+
