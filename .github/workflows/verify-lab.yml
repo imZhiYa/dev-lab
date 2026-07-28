@@ -42,6 +42,7 @@ jobs:
               - 'scripts/verify-jdk8-demos.sh'
             java21:
               - 'jvm-demo/**'
+              - 'thread-demo/**'
               - 'scripts/verify-jdk21-demos.sh'
             cpp20:
               - 'virtual-memory-demo/**'
