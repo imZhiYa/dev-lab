@@ -1,4 +1,4 @@
-package com.zhiya.threed.pool;
+package com.zhiya;
 
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
