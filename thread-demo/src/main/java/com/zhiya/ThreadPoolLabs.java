@@ -255,7 +255,7 @@ public class ThreadPoolLabs {
         System.out.println("    }");
 
         System.out.println();
-        System.out.println("  Step 3 · JDK 11 实跑结果对照（只改了 Executors 那一行）：");
+        System.out.println("  Step 3 · JDK 21 实跑结果对照（只改了 Executors 那一行）：");
         System.out.println();
         System.out.println("    A 组 · Executors.newWorkStealingPool()");
         System.out.println("      > 提交 3 个各耗时 1 秒的任务，然后 main 立即返回...");
