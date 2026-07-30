@@ -82,12 +82,21 @@ jobs:
 
       - name: 🟣 编译基准镜像与执行 JMH 跑分
         run: |
-          BM_DIR=$([ -d "benchmark-demo" ] && echo "benchmark-demo" || echo "benchmarks")
+          BM_DIR=$(ls -d benchmark-demo benchmarks 2>/dev/null | head -1)
           cd $BM_DIR
           mvn clean package -DskipTests
-          java -jar target/benchmarks.jar -wi 1 -i 3 -f 1 -t 1
-          java -jar target/benchmarks.jar "TreeBenchmark.*" -p n=10000 -t 1
-
+          echo "=========================================="
+          echo "📊 TreeBenchmark"
+          echo "=========================================="
+          java -jar target/benchmarks.jar "TreeBenchmark.*" -p n=10000 -t 1 \-wi 1 -i 3 -f 1 2>&1 | tee ../tree-benchmark.log | grep -E "Benchmark|thrpt|Score|±"
+          echo ""
+          echo "=========================================="
+          echo "📊 SynchronizedMap vs ConcurrentHashMap"
+          echo "=========================================="
+          java -jar target/benchmarks.jar "SynchronizedMapVsConcurrentMapBenchmark.*" \-p size=1000 -wi 1 -i 3 -f 1 -t 1 2>&1 | tee ../sync-vs-concurrent.log | grep -E "Benchmark|thrpt|Score|±"
+          echo ""
+          echo "✅ JMH 跑分完成，完整日志见 tree-benchmark.log 和 sync-vs-concurrent.log"
+          
   # =========================================================================
   # 阶段 2 - 专区 B: JDK 21 验证矩阵 (jvm-demo: 虚拟线程 / GC / JFR / NMT)
   # =========================================================================
