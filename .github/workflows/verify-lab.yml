@@ -37,6 +37,7 @@ jobs:
               - 'binary-demo/**'
               - 'tree-demo/**'
               - 'aqs-demo/**'
+              - 'collection-demo/**'   
               - 'benchmark-demo/**'
               - 'benchmarks/**'
               - 'scripts/verify-jdk8-demos.sh'
