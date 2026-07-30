@@ -11,7 +11,7 @@ echo "================================================================="
 echo "🚀 启动 dev-lab JDK 8 智能 CI 引擎"
 echo "================================================================="
 
-TARGET_MODULES=("binary-demo" "tree-demo" "aqs-demo")
+TARGET_MODULES=("binary-demo" "tree-demo" "aqs-demo" "collection-demo")
 
 if [ "$FORCE_ALL" = "true" ]; then
     echo "⚙️  [全量模式] 显式触发全量回归自检"
