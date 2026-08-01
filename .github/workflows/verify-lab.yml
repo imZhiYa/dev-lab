@@ -44,6 +44,7 @@ jobs:
             java21:
               - 'jvm-demo/**'
               - 'thread-demo/**'
+              - 'innodb-demo/**'             # <== ✨ 新增：监听 innodb-demo 目录的代码提交
               - 'scripts/verify-jdk21-demos.sh'
             cpp20:
               - 'virtual-memory-demo/**'
