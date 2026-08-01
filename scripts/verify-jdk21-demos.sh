@@ -49,3 +49,36 @@ java -cp thread-demo/target/classes com.zhiya.ReactiveNoDepsDemo
 echo ""
 echo "✅ thread-demo 全部实验执行完毕！"
 
+# 5. 编译 innodb-demo 全量源码 (JDK 21)
+echo ""
+echo "================================================================="
+echo "🐬 启动 innodb-demo 数据库底层机制实验公审"
+echo "================================================================="
+echo "🔨 正在编译 innodb-demo 全量源码..."
+mkdir -p innodb-demo/target/classes
+find innodb-demo -name "*.java" | xargs javac -encoding UTF-8 -d innodb-demo/target/classes
+echo "✅ innodb-demo 全量源码编译成功！"
+
+echo "🧪 运行 BufferPoolLRU..."
+java -Dfile.encoding=UTF-8 -cp innodb-demo/target/classes com.imzhiya.devlab.innodb.BufferPoolLRU
+
+echo "🧪 运行 BPlusTreeRoutingDemo..."
+java -Dfile.encoding=UTF-8 -cp innodb-demo/target/classes com.imzhiya.devlab.innodb.BPlusTreeRoutingDemo
+
+echo "🧪 运行 PageDirectoryDemo..."
+java -Dfile.encoding=UTF-8 -cp innodb-demo/target/classes com.imzhiya.devlab.innodb.PageDirectoryDemo
+
+echo "🧪 运行 RedoLogRingBufferDemo..."
+java -Dfile.encoding=UTF-8 -cp innodb-demo/target/classes com.imzhiya.devlab.innodb.RedoLogRingBufferDemo
+
+echo "🧪 运行 MVCCDemo..."
+java -Dfile.encoding=UTF-8 -cp innodb-demo/target/classes com.imzhiya.devlab.innodb.MVCCDemo
+
+echo "🧪 运行 NextKeyLockDemo..."
+java -Dfile.encoding=UTF-8 -cp innodb-demo/target/classes com.imzhiya.devlab.innodb.NextKeyLockDemo
+
+echo "🧪 运行 DoublewriteBufferDemo..."
+java -Dfile.encoding=UTF-8 -cp innodb-demo/target/classes com.imzhiya.devlab.innodb.DoublewriteBufferDemo
+
+echo "✅ innodb-demo 全部底层模型运行验证完毕！"
+
