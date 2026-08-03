@@ -82,3 +82,32 @@ java -Dfile.encoding=UTF-8 -cp innodb-demo/target/classes com.zhiya.innodb.Doubl
 
 echo "✅ innodb-demo 全部底层模型运行验证完毕！"
 
+# 8. 编译 redis-demo 全量源码 (JDK 21 - Redis 深度解析: 9 层认知墙 + 坑 / 自测 / 决策卡)
+echo ""
+echo "================================================================="
+echo "⚡ 启动 redis-demo Redis 深度解析实验公审"
+echo "================================================================="
+echo "🔨 正在编译 redis-demo 全量源码..."
+mkdir -p redis-demo/target/classes
+find redis-demo -name "*.java" | xargs javac -encoding UTF-8 -d redis-demo/target/classes
+echo "✅ redis-demo 全量源码编译成功！"
+
+# 若存在 RunAllDemos 跑批入口则一次跑批，否则自动扫描所有含 main 的类逐个运行
+if find redis-demo -name "RunAllDemos.java" | grep -q .; then
+    echo "🚀 检测到 RunAllDemos 跑批入口，执行全量 21 项演示..."
+    java -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -cp redis-demo/target/classes com.zhiya.redis.RunAllDemos all
+else
+    echo "🚀 自动扫描 redis-demo 中的 Demo 入口类..."
+    for jf in $(find redis-demo -name "*.java"); do
+        if grep -q "public static void main" "$jf"; then
+            PKG=$(grep -E '^[[:space:]]*package[[:space:]]+' "$jf" | head -n 1 | sed -E 's/^[[:space:]]*package[[:space:]]+//;s/[;[:space:]].*//' | tr -d '\r')
+            CLS=$(basename "$jf" .java)
+            if [ -n "$PKG" ]; then FULL_CLS="${PKG}.${CLS}"; else FULL_CLS="${CLS}"; fi
+            echo "▶️  [运行] $FULL_CLS"
+            java -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -cp redis-demo/target/classes "$FULL_CLS"
+            echo "✅ $FULL_CLS 校验通过！"
+        fi
+    done
+fi
+echo "✅ redis-demo 全部实验运行验证完毕！"
+
