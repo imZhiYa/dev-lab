@@ -1,9 +1,9 @@
 package com.zhiya.redis;
 
-import com.zhiya.redis.support.RedisSupport;
-import com.zhiya.redis.demo.MiniStructures.Listpack;
-import com.zhiya.redis.demo.MiniStructures.Intset;
-import com.zhiya.redis.demo.MiniStructures.Skiplist;
+import com.zhiya.redis.RedisSupport;
+import com.zhiya.redis.MiniStructures.Listpack;
+import com.zhiya.redis.MiniStructures.Intset;
+import com.zhiya.redis.MiniStructures.Skiplist;
 
 
 import java.util.List;
