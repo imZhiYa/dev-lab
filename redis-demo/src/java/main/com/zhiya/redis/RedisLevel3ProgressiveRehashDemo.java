@@ -1,6 +1,6 @@
 package com.zhiya.redis;
 
-import com.zhiya.redis.support.RedisSupport;
+import com.zhiya.redis.RedisSupport;
 
 
 import java.util.List;
