@@ -1,6 +1,6 @@
 # 🧬 dev-lab · 代码验证实验室
 
-**Code Verification Lab — Database & Memory & Concurrency & Collection & JVM & Benchmark**
+**Code Verification Lab — Database & Memory & Concurrency & Collection & JVM & Cache & Benchmark**
 
 _知识库讲原理，这里写代码验证_
 
@@ -39,6 +39,7 @@ _知识库讲原理，这里写代码验证_
 | 领域入口 | 核心验证重点摘要 |
 |---|---|
 | 🐬 **[Database · MySQL InnoDB 推演](innodb-demo/README.md)** | B+树路标寻址、Page二分槽、MVCC底层判定、Next-Key防幻读死等、环形日志与Doublewrite防撕裂页。 |
+| 🔥 **[Cache · Redis 深度解析](redis-demo/src/java/main/com/zhiya/redis/README.md)** | 9 层认知墙：介质墙、单线程事件循环、type×encoding、过期淘汰、RDB/AOF、复制哨兵、16384 槽位、gossip 选举、Stream/HLL；另含 15 坑、25 自测、10 决策卡。 |
 | 🌳 **[Tree · 顶级树形数据结构](tree-demo/README.md)** | BST删除、红黑树自平衡旋转、并发跳表(SkipList)多级跃迁、B树/B+树的分裂与扇出机制。 |
 | 🔴 **[AQS · 同步器与并发原语](aqs-demo/README.md)** | 12 个底层实验。CAS竞态、CLH双向队列结构、Condition挂起、以及 JUC 倒计数与循环栅栏协同。 |
 | 📦 **[Collection · 集合框架深度验证](collection-demo/README.md)** | `subList` 内存泄漏、HashMap树化与哈希冲突复现、COW代价验证、并发安全的错误用法重现。 |
@@ -76,6 +77,22 @@ _知识库讲原理，这里写代码验证_
 |---|---:|---:|---:|
 | **9读1写** | 14,345 ops/ms | **102,067 ops/ms** | **7.1x** |
 | **5读5写** | 5,745 ops/ms | **45,077 ops/ms** | **7.8x** |
+
+### 🔥 Redis 深度解析实测摘要
+
+> 🖥️ **环境**：沙箱实测 · Azul Zulu `21.0.11` · `java com.zhiya.redis.RunAllDemos all`（CI 经 `scripts/verify-jdk21-demos.sh` 自动复跑，教学量级，以你的硬件为准）
+
+| 验证点 | 实测结果 | 机制解读 |
+|---|---:|---|
+| 介质墙 (L1) | HashMap 读 ~90ns vs 磁盘随机读 ~1µs | 隔着 10³ 的墙：Redis 的"快"是把数据放进 DRAM |
+| 无锁并发计数 (L2) | 8 线程×20 万次 → 仅 23.9 万 (丢 85%) | "GET+SET 两步"竞态；单线程串行免费原子性 |
+| 近似 LRU (L4) | samples=1→85.6% / 5→32.1% / 20→14.3% (冷度百分位) | 采样越大越接近全局最冷，代价是 CPU |
+| 缓存击穿 (L4) | 无防护 DB 被打 112 次 → single-flight 1 次 | 同一热点的回源重建同一时刻最多一个 |
+| HLL 估计 (L9) | 真实 95,139 → 估计 94,591，误差 0.58% | 12KB 固定内存换 ≈0.81% 可证误差 |
+| HLL 减法伪命题 (L9) | 两不相交集合"净增" = -382 | 估计误差方向不可知，只能并不能减 |
+| node-timeout 误判 (L8) | 15s→0.00% / 5s→0.73% / 1s→37.37% | 调小 = 调低错杀阈值，宁可为观察付钱 |
+
+_注：Redis 演示全部零依赖，可用 `bash scripts/verify-jdk21-demos.sh` 在你本地一键复跑。_
 
 _注：所有基准测试都可使用 `mvn clean package -DskipTests && java -jar target/benchmarks.jar` 在你本地机器一键重现。_
 
