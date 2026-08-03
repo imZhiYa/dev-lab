@@ -1,4 +1,4 @@
-package com.zhiya.redis.demo;
+package com.zhiya.redis;
 
 import com.zhiya.redis.support.RedisSupport;
 
