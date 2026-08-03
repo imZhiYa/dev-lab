@@ -60,25 +60,25 @@ find innodb-demo -name "*.java" | xargs javac -encoding UTF-8 -d innodb-demo/tar
 echo "✅ innodb-demo 全量源码编译成功！"
 
 echo "🧪 运行 BufferPoolLRU..."
-java -Dfile.encoding=UTF-8 -cp innodb-demo/target/classes com.imzhiya.devlab.innodb.BufferPoolLRU
+java -Dfile.encoding=UTF-8 -cp innodb-demo/target/classes com.zhiya.innod.BufferPoolLRU
 
 echo "🧪 运行 BPlusTreeRoutingDemo..."
-java -Dfile.encoding=UTF-8 -cp innodb-demo/target/classes com.imzhiya.devlab.innodb.BPlusTreeRoutingDemo
+java -Dfile.encoding=UTF-8 -cp innodb-demo/target/classes com.zhiya.innod.BPlusTreeRoutingDemo
 
 echo "🧪 运行 PageDirectoryDemo..."
-java -Dfile.encoding=UTF-8 -cp innodb-demo/target/classes com.imzhiya.devlab.innodb.PageDirectoryDemo
+java -Dfile.encoding=UTF-8 -cp innodb-demo/target/classes com.zhiya.innod.PageDirectoryDemo
 
 echo "🧪 运行 RedoLogRingBufferDemo..."
-java -Dfile.encoding=UTF-8 -cp innodb-demo/target/classes com.imzhiya.devlab.innodb.RedoLogRingBufferDemo
+java -Dfile.encoding=UTF-8 -cp innodb-demo/target/classes com.zhiya.innod.RedoLogRingBufferDemo
 
 echo "🧪 运行 MVCCDemo..."
-java -Dfile.encoding=UTF-8 -cp innodb-demo/target/classes com.imzhiya.devlab.innodb.MVCCDemo
+java -Dfile.encoding=UTF-8 -cp innodb-demo/target/classes com.zhiya.innod.MVCCDemo
 
 echo "🧪 运行 NextKeyLockDemo..."
-java -Dfile.encoding=UTF-8 -cp innodb-demo/target/classes com.imzhiya.devlab.innodb.NextKeyLockDemo
+java -Dfile.encoding=UTF-8 -cp innodb-demo/target/classes com.zhiya.innod.NextKeyLockDemo
 
 echo "🧪 运行 DoublewriteBufferDemo..."
-java -Dfile.encoding=UTF-8 -cp innodb-demo/target/classes com.imzhiya.devlab.innodb.DoublewriteBufferDemo
+java -Dfile.encoding=UTF-8 -cp innodb-demo/target/classes com.zhiya.innod.DoublewriteBufferDemo
 
 echo "✅ innodb-demo 全部底层模型运行验证完毕！"
 
