@@ -1,4 +1,4 @@
-package com.zhiya.benchmark.network;
+package com.zhiya.benchmark;
 
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
