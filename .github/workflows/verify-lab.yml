@@ -88,7 +88,11 @@ jobs:
         run: |
           set -o pipefail
 
-          BM_DIR=$(ls -d benchmark-demo benchmarks 2>/dev/null | head -1)
+          BM_DIR=$(ls -d benchmarks 2>/dev/null | head -1)
+          if [ -z "$BM_DIR" ]; then
+          echo "❌ 未找到 benchmarks 目录"
+          exit 1
+          fi
           cd "$BM_DIR"
 
           mvn clean package -DskipTests
