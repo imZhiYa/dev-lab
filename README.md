@@ -1,6 +1,6 @@
 # 🧬 dev-lab · 代码验证实验室
 
-**Code Verification Lab — Database & Memory & Concurrency & Collection & JVM & Cache & Benchmark**
+**Code Verification Lab — Database & Memory & Concurrency & Collection & JVM & Cache & Network & Benchmark**
 
 _知识库讲原理，这里写代码验证_
 
@@ -45,7 +45,8 @@ _知识库讲原理，这里写代码验证_
 | 📦 **[Collection · 集合框架深度验证](collection-demo/README.md)** | `subList` 内存泄漏、HashMap树化与哈希冲突复现、COW代价验证、并发安全的错误用法重现。 |
 | ☕ **[JVM · 运行机制与 OOM 现场](jvm-demo/README.md)** | 手写复现各数据区 OOM 现场 (Metaspace/Heap/直接内存)、JOL对象头打印、锁升级路线重演。 |
 | 🧵 **[Thread · 线程池与调优](thread-demo/README.md)** | `ThreadPoolExecutor` 拒绝与队列打爆实战、手搓背压流控、**JDK 21 虚拟线程**十万级并发实测。 |
-| ⚡ **[Benchmark · JMH 工业级基准](benchmarks/README.md)** | 11 个微基准战。位运算vs算术、ArrayList vs LinkedList、AQS vs LongAdder并发对抗、无锁写基准。 |
+| 🌐 **[Network · 高性能网络编程](network-demo/src/java/main/com/zhiya/network/README.md)** | BIO 线程陪等、NIO 忙轮询与 Selector readiness、半包粘包、部分写 / `OP_WRITE`、Reactor 状态 owner、ACK / drain 与 AIO completion。 |
+| ⚡ **[Benchmark · JMH 工业级基准](benchmarks/README.md)** | 12 个微基准战。位运算、集合与并发结构对抗；新增 BIO 阻塞式 Echo vs NIO Selector Echo 的固定连接 loopback 对照。 |
 | 📐 **[Binary · 位运算实战](binary-demo/README.md)** | 布隆过滤器防穿透、一致性哈希环防倾斜、Base32 GeoHash、以及位运算在订单状态机中的压缩重现。 |
 | 🧠 **[Memory · 虚拟内存与 OS (C++20)](virtual-memory-demo/README.md)** | ASLR基址、Base+Limit段错误、TLB容量耗尽、按需调页三闸门(RSS/minflt)实证与写时复制(COW)。 |
 
@@ -54,6 +55,8 @@ _知识库讲原理，这里写代码验证_
 ## 🚀 统一基准与环境测试报告
 
 部分全域级别的基准跑分报告直接在 CI 流水线中产出，此处摘录部分核心对抗结果：
+
+> 🌐 **网络 I/O 基准边界**：`BioVsNioLoopbackBenchmark` 比较的是固定长连接、固定长度字段协议与本机 loopback 下的一次 request-response 局部成本；它不代表公网延迟、海量连接容量、慢客户端背压或下游 RPC / DB 性能。完整测试边界见 [benchmarks README](benchmarks/README.md)。
 
 > 🖥️ **环境 A（并发锁矩阵）**：GitHub Actions `ubuntu-latest` · JDK 8 · 8 线程并发压测
 > ⚙️ **命令**：`java -jar benchmarks/target/benchmarks.jar SyncVsAqsBenchmark`
