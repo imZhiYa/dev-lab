@@ -116,7 +116,7 @@ jobs:
           echo "📊 BIO vs NIO Loopback"
           echo "=========================================="
           java -jar target/benchmarks.jar \
-            "BioVsNioLoopbackBenchmark.*" \
+            "com.zhiya.benchmark.BioVsNioLoopbackBenchmark.*" \
             -p payloadBytes=16,256,4096 \
             -t 1 -wi 1 -i 3 -f 1 2>&1 \
             | tee ../bio-vs-nio-loopback.log \
