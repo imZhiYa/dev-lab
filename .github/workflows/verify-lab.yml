@@ -72,7 +72,7 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: 🧪 智能增量公审 JDK 8 演练模块 (binary / tree / aqs)
+      - name: 🧪 智能增量公审 JDK 8 演练模块 (binary / tree / aqs / io)
         run: |
           chmod +x scripts/verify-jdk8-demos.sh
           IS_MAIN_PUSH="${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}"
@@ -99,8 +99,21 @@ jobs:
           echo "=========================================="
           java -jar target/benchmarks.jar "SynchronizedMapVsConcurrentMapBenchmark.*" \-p size=1000 -wi 1 -i 3 -f 1 -t 1 2>&1 | tee ../sync-vs-concurrent.log | grep -E "Benchmark|thrpt|Score|±"
           echo ""
-          echo "✅ JMH 跑分完成，完整日志见 tree-benchmark.log 和 sync-vs-concurrent.log"
-          
+          echo ""
+          echo "=========================================="
+          echo "📊 BIO vs NIO Loopback"
+          echo "=========================================="
+          java -jar target/benchmarks.jar \
+            "BioVsNioLoopbackBenchmark.*" \
+            -p payloadBytes=16,256,4096 \
+            -t 1 \
+            -wi 1 \
+            -i 3 \
+            -f 1 2>&1 \
+            | tee ../bio-vs-nio-loopback.log \
+            | grep -E "Benchmark|thrpt|Score|±"
+          echo ""
+          echo "✅ JMH 跑分完成，完整日志见 tree-benchmark.log 和 sync-vs-concurrent.log 和bio-vs-nio-loopback-benchmark.log"
   # =========================================================================
   # 阶段 2 - 专区 B: JDK 21 验证矩阵 (jvm-demo: 虚拟线程 / GC / JFR / NMT)
   # =========================================================================
