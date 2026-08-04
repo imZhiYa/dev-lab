@@ -115,15 +115,27 @@ jobs:
           echo "=========================================="
           echo "📊 BIO vs NIO Loopback"
           echo "=========================================="
+
+          echo "🔍 JMH 已注册的 BIO/NIO benchmark："
+          java -jar target/benchmarks.jar -l \
+            | grep "BioVsNioLoopbackBenchmark"
+
+          echo ""
+          echo "🚀 开始运行 BIO vs NIO Loopback："
+
           java -jar target/benchmarks.jar \
             "com.zhiya.benchmark.BioVsNioLoopbackBenchmark.*" \
             -p payloadBytes=16,256,4096 \
-            -t 1 -wi 1 -i 3 -f 1 2>&1 \
-            | tee ../bio-vs-nio-loopback.log \
-            | grep -E "Benchmark|thrpt|Score|±"
+            -t 1 \
+            -wi 1 \
+            -i 3 \
+            -f 1 \
+            -foe true \
+            2>&1 \
+            | tee ../bio-vs-nio-loopback.log
 
           echo ""
-          echo "✅ JMH 跑分完成，完整日志见 tree-benchmark.log、sync-vs-concurrent.log 和 bio-vs-nio-loopback.log"
+          echo "✅ BIO vs NIO Loopback 跑分完成，完整日志见 bio-vs-nio-loopback.log"
   # =========================================================================
   # 阶段 2 - 专区 B: JDK 21 验证矩阵 (jvm-demo: 虚拟线程 / GC / JFR / NMT)
   # =========================================================================
