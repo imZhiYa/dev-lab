@@ -111,3 +111,45 @@ else
 fi
 echo "✅ redis-demo 全部实验运行验证完毕！"
 
+# 9. 编译并运行 network-demo 全量源码（JDK 21：BIO / NIO / Reactor / AIO / 生命周期）
+echo ""
+echo "================================================================="
+echo "🌐 启动 network-demo 高性能网络编程实验公审"
+echo "================================================================="
+
+echo "🔨 正在编译 network-demo 全量源码..."
+mkdir -p network-demo/target/classes
+
+find network-demo/src/java/main -name "*.java" \
+  | xargs javac -encoding UTF-8 -d network-demo/target/classes
+
+echo "✅ network-demo 全量源码编译成功！"
+
+echo "🚀 自动扫描 network-demo 中的 Demo 入口类..."
+
+while IFS= read -r java_file; do
+  if grep -q "public static void main" "$java_file"; then
+    package_name=$(
+      grep -E '^[[:space:]]*package[[:space:]]+' "$java_file" \
+        | head -n 1 \
+        | sed -E 's/^[[:space:]]*package[[:space:]]+//;s/[;[:space:]].*//' \
+        | tr -d '\r'
+    )
+
+    class_name=$(basename "$java_file" .java)
+    full_class="${package_name}.${class_name}"
+
+    echo "▶️ [运行] $full_class"
+
+    java \
+      -Dfile.encoding=UTF-8 \
+      -Dstdout.encoding=UTF-8 \
+      -cp network-demo/target/classes \
+      "$full_class"
+
+    echo "✅ $full_class 校验通过！"
+  fi
+done < <(find network-demo/src/java/main -name "*.java" | sort)
+
+echo "✅ network-demo 全部实验运行验证完毕！"
+
