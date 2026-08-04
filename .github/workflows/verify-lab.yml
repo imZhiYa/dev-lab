@@ -45,7 +45,8 @@ jobs:
               - 'jvm-demo/**'
               - 'thread-demo/**'
               - 'innodb-demo/**'            
-              - 'redis-demo/**'              # <== ✨ 新增：监听 redis-demo 目录的代码提交  ← 就这一行
+              - 'redis-demo/**'             
+              - 'network-demo/**'            # 高性能网络编程实验
               - 'scripts/verify-jdk21-demos.sh'
             cpp20:
               - 'virtual-memory-demo/**'
