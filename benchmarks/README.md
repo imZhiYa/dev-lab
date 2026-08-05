@@ -41,23 +41,27 @@
 
 JMH 必须打成胖包 (Fat Jar) 以防止类加载和 JIT 编译器的干扰，推荐使用环境：**JDK 8**。
 
-```bash
-mvn clean package -DskipTests
-```
-
-> 注意：`pom.xml` 通过 `build-helper-maven-plugin` 把 `../tree-demo/src/main/java`（BST / MaxHeap / MinHeap / RedBlackTree / BPlusTree / SkipList / Trie 等）作为额外源码根一并编译打包，所以 `mvn package` 一条命令即可产出含全部 benchmark 的 `target/benchmarks.jar`。
+所有 benchmark 的 JMH 参数已收敛到 `scripts/run-benchmarks.sh` 的参数表（唯一真源），README 与 CI 都只调用脚本，不再各自抄命令。
 
 ```bash
-# 运行全维度锁对抗基准（例如开 8 线程并发，预热 1 轮，迭代 3 轮）
-java -jar target/benchmarks.jar "SyncVsAqsBenchmark.*" -p n=1000 -t 8 -wi 1 -i 3 -f 1
+cd benchmarks
 
-# 运行树形结构基准
-java -jar target/benchmarks.jar "TreeBenchmark.*" -p n=10000 -t 1 -wi 1 -i 3 -f 1
+# 编译（幂等，已存在则跳过）+ 跑全部 3 组基准
+make
 
-# 运行 BIO vs NIO 本机回环基准（3 档 payload，单线程）
-java -jar target/benchmarks.jar "com.zhiya.benchmark.BioVsNioLoopbackBenchmark.*" \
-  -p payloadBytes=16,256,4096 -t 1 -wi 1 -i 3 -f 1 -foe true
+# 只跑某一组
+make tree
+make sync
+make bio
+
+# 长测档（足量预热/迭代，本机深挖用；默认是 CI 快速档）
+LONG=1 make bio
+
+# 底层等价命令（不依赖 make）
+bash scripts/run-benchmarks.sh all
 ```
+
+结果落盘：`logs/<target>.log`（完整日志）+ `results/<target>.json`（JMH 机器可读结果）。
 
 ## 🤖 CI 集成
 
