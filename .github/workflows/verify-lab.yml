@@ -85,61 +85,19 @@ jobs:
           fi
 
       - name: 🟣 编译基准镜像与执行 JMH 跑分
+        working-directory: benchmarks
         run: |
-          set -o pipefail
+          mvn -q clean package -DskipTests
+          bash scripts/run-benchmarks.sh all
 
-          BM_DIR=$(ls -d benchmarks 2>/dev/null | head -1)
-          if [ -z "$BM_DIR" ]; then
-          echo "❌ 未找到 benchmarks 目录"
-          exit 1
-          fi
-          cd "$BM_DIR"
-
-          mvn clean package -DskipTests
-
-          echo "=========================================="
-          echo "📊 TreeBenchmark"
-          echo "=========================================="
-          java -jar target/benchmarks.jar "TreeBenchmark.*" \
-            -p n=10000 -t 1 -wi 1 -i 3 -f 1 2>&1 \
-            | tee ../tree-benchmark.log \
-            | grep -E "Benchmark|thrpt|Score|±"
-
-          echo ""
-          echo "=========================================="
-          echo "📊 SynchronizedMap vs ConcurrentHashMap"
-          echo "=========================================="
-          java -jar target/benchmarks.jar \
-            "SynchronizedMapVsConcurrentMapBenchmark.*" \
-            -p size=1000 -wi 1 -i 3 -f 1 -t 1 2>&1 \
-            | tee ../sync-vs-concurrent.log \
-            | grep -E "Benchmark|thrpt|Score|±"
-
-          echo ""
-          echo "=========================================="
-          echo "📊 BIO vs NIO Loopback"
-          echo "=========================================="
-
-          echo "🔍 JMH 已注册的 BIO/NIO benchmark："
-          java -jar target/benchmarks.jar -l \
-            | grep "BioVsNioLoopbackBenchmark"
-
-          echo ""
-          echo "🚀 开始运行 BIO vs NIO Loopback："
-
-          java -jar target/benchmarks.jar \
-            "com.zhiya.benchmark.BioVsNioLoopbackBenchmark.*" \
-            -p payloadBytes=16,256,4096 \
-            -t 1 \
-            -wi 1 \
-            -i 3 \
-            -f 1 \
-            -foe true \
-            2>&1 \
-            | tee ../bio-vs-nio-loopback.log
-
-          echo ""
-          echo "✅ BIO vs NIO Loopback 跑分完成，完整日志见 bio-vs-nio-loopback.log"
+      - name: 📦 上传 JMH 跑分产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: jmh-results
+          path: |
+            benchmarks/logs/*.log
+            benchmarks/results/*.json
+          if-no-files-found: warn  
   # =========================================================================
   # 阶段 2 - 专区 B: JDK 21 验证矩阵 (jvm-demo: 虚拟线程 / GC / JFR / NMT)
   # =========================================================================
