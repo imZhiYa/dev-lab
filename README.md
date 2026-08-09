@@ -49,6 +49,7 @@ _知识库讲原理，这里写代码验证_
 | ⚡ **[Benchmark · JMH 工业级基准](benchmarks/README.md)** | 12 个微基准战。位运算、集合与并发结构对抗；新增 BIO 阻塞式 Echo vs NIO Selector Echo 的固定连接 loopback 对照。 |
 | 📐 **[Binary · 位运算实战](binary-demo/README.md)** | 布隆过滤器防穿透、一致性哈希环防倾斜、Base32 GeoHash、以及位运算在订单状态机中的压缩重现。 |
 | 🧠 **[Memory · 虚拟内存与 OS (C++20)](virtual-memory-demo/README.md)** | ASLR基址、Base+Limit段错误、TLB容量耗尽、按需调页三闸门(RSS/minflt)实证与写时复制(COW)。 |
+| 🍃 **[SpringBoot · 机制验证实验室](springboot-demo/README.md)** | SpringBoot 3.3.5 十九组实验：手写 IoC、事件、自动装配、Web 双跑法(SERVLET/REACTIVE)、事务、AOP、优雅停机、启动慢排查(JFR/BufferingStartup)。 |
 
 ---
 
