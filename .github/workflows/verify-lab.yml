@@ -47,7 +47,9 @@ jobs:
               - 'innodb-demo/**'            
               - 'redis-demo/**'             
               - 'network-demo/**'            # 高性能网络编程实验
+              - 'springboot-demo/**'         # SpringBoot 机制验证实验室 (Maven + JDK 21)
               - 'scripts/verify-jdk21-demos.sh'
+              - 'scripts/verify-springboot-demos.sh'
             cpp20:
               - 'virtual-memory-demo/**'
               - 'scripts/verify-cpp20-demos.sh'
@@ -119,6 +121,30 @@ jobs:
         run: |
           chmod +x scripts/verify-jdk21-demos.sh
           ./scripts/verify-jdk21-demos.sh
+
+  # =========================================================================
+  # 阶段 2 - 专区 B2: SpringBoot 验证矩阵 (springboot-demo: Maven + JDK 21)
+  # 编译 + IoC/数据层/Web 双跑法冒烟，随 java21 路径过滤器联动
+  # =========================================================================
+  verify-springboot:
+    needs: detect-changes
+    if: ${{ github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || needs.detect-changes.outputs.java21 == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 拉取 dev-lab 源码
+        uses: actions/checkout@v4
+
+      - name: ☕ 设置 JDK 21 + Maven 缓存
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: 🍃 执行 SpringBoot 专区公审 (编译 + 冒烟 + 双跑法)
+        run: |
+          chmod +x scripts/verify-springboot-demos.sh
+          ./scripts/verify-springboot-demos.sh
 
   # =========================================================================
   # 阶段 2 - 专区 C: C++20 验证矩阵 (virtual-memory-demo: 虚拟内存硬核验证)
