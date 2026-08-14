@@ -19,9 +19,11 @@ _知识库讲原理，这里写代码验证_
 > 🧬 **dev-lab** → 写代码落地验证
 
 每个模块遵循三个原则：
-- **零外部依赖**（除 JMH）：每个 `.java` / `.cpp` 文件都能单文件直接跑。
-- **自包含 `main`**：每个源文件都是独立的验证 demo，控制台输出可重放。
+- **可运行**：每个源文件都是独立的验证 demo，控制台输出可重放。
 - **可量化**：关键操作有对应的 JMH 微基准或系统级观测。
+- **依赖边界**：
+  - 纯语言专区（binary / tree / aqs / collection / jvm / thread / network / benchmark / virtual-memory）：**零外部依赖**（除 JMH），每个 `.java` / `.cpp` 文件都能单文件直接跑。
+  - 框架生态专区（[SpringBoot](springboot-demo/README.md) / [Dubbo](dubbo-demo/README.md)）：Maven 多模块 + 框架依赖，验证入口、环境要求与运行方式见各子模块 README，编译与冒烟由 CI 公审脚本（`verify-springboot-demos.sh` / `verify-dubbo-demos.sh`）保证。
 
 ---
 
