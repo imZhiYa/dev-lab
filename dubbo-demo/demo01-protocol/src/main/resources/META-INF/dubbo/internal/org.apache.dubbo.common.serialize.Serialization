@@ -1,0 +1,1 @@
+kryo=com.zhiya.dubbo.demo.protocol.serialization.KryoSerialization

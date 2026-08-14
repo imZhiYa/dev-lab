@@ -1,0 +1,3 @@
+com.zhiya.dubbo.demo.api.GreetingRequest
+com.zhiya.dubbo.demo.api.GreetingService
+com.zhiya.dubbo.demo.protocol.GreetingServiceImpl

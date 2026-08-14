@@ -1,0 +1,3 @@
+random=com.zhiya.dubbo.demo.spi.extension.DemoRandomBalance
+consistentHash=com.zhiya.dubbo.demo.spi.extension.DemoConsistentHashBalance
+com.zhiya.dubbo.demo.spi.extension.DemoBalanceWrapper
