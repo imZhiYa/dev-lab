@@ -49,9 +49,11 @@ jobs:
               - 'network-demo/**'            # 高性能网络编程实验
               - 'springboot-demo/**'         # SpringBoot 机制验证实验室 (Maven + JDK 21)
               - 'dubbo-demo/**'              # Dubbo 分布式 RPC 机制验证实验室 (Maven + JDK 21)
+              - 'mq-demo/**'                 # MQ 消息中间件机制验证实验室 (Maven + JDK 21)
               - 'scripts/verify-jdk21-demos.sh'
               - 'scripts/verify-springboot-demos.sh'
               - 'scripts/verify-dubbo-demos.sh'
+              - 'scripts/verify-mq-demos.sh'
             cpp20:
               - 'virtual-memory-demo/**'
               - 'scripts/verify-cpp20-demos.sh'
@@ -172,6 +174,32 @@ jobs:
         run: |
           chmod +x scripts/verify-dubbo-demos.sh
           ./scripts/verify-dubbo-demos.sh
+
+  # =========================================================================
+  # 阶段 2 - 专区 B4: MQ 验证矩阵 (mq-demo: Kafka 3.5 机制验证)
+  # 编译 + CoreSmokeApp 纯逻辑冒烟（状态机/幂等键/重试策略，零中间件）
+  # EX-01~06 依赖 docker 容器（Kafka/MySQL/Redis/RabbitMQ），CI 跳过（本地跑法见 mq-demo/README.md）
+  # =========================================================================
+  verify-mq:
+    needs: detect-changes
+    if: ${{ github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || needs.detect-changes.outputs.java21 == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 拉取 dev-lab 源码
+        uses: actions/checkout@v4
+
+      - name: ☕ 设置 JDK 21 + Maven 缓存
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: 📨 执行 MQ 专区公审 (编译 + CoreSmokeApp 冒烟)
+        run: |
+          chmod +x scripts/verify-mq-demos.sh
+          ./scripts/verify-mq-demos.sh
+
 
   # =========================================================================
   # 阶段 2 - 专区 C: C++20 验证矩阵 (virtual-memory-demo: 虚拟内存硬核验证)

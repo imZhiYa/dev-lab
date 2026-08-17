@@ -19,3 +19,6 @@ buildNumber.properties
 # IDE local configs (contain user-specific paths)
 .idea/
 .DS_Store
+
+# MQ 实验临时结果（README 回填后即弃，不入库）
+results/

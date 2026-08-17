@@ -53,6 +53,7 @@ _知识库讲原理，这里写代码验证_
 | 🧠 **[Memory · 虚拟内存与 OS (C++20)](virtual-memory-demo/README.md)** | ASLR基址、Base+Limit段错误、TLB容量耗尽、按需调页三闸门(RSS/minflt)实证与写时复制(COW)。 |
 | 🍃 **[SpringBoot · 机制验证实验室](springboot-demo/README.md)** | SpringBoot 3.3.5 十九组实验：手写 IoC、事件、自动装配、Web 双跑法(SERVLET/REACTIVE)、事务、AOP、优雅停机、启动慢排查(JFR/BufferingStartup)。 |
 | 🧭 **[Dubbo · 分布式 RPC 机制验证实验室](dubbo-demo/README.md)** | Dubbo 3.3.4 十一组实验：调用链 E00、序列化盒 E01、Nacos 注册中心 E03-E06、线程模型 E07、SPI 机制 E09、Mock 降级 E10。 |
+| 📨 **[MQ · 消息中间件机制验证实验室](mq-demo/README.md)** | Kafka 3.5 六组实验：acks 确认代价、批量消费与 interval 被踢、幂等三方案与 Redis 淘汰泄漏、积压公式校准、乱序补偿与活锁、CQv1 vs CQv2 存储形态。 |
 
 ---
 
