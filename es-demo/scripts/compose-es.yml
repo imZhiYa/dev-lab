@@ -1,0 +1,60 @@
+# ES 机制验证实验室 - 中间件编排（仅本地实验，--rm 式生命周期：down -v 后测试数据全部销毁）
+# 版本固定知识库实验基线：Elasticsearch 8.15.3 × 3 节点（对齐 knowledge/elasticsearch es-ha-lab 拓扑）
+# 说明：单机 colima VM 内 3 节点各 512m 堆；xpack.security 关闭（本地 lab 沙箱，非任何真实环境）
+# 依赖：宿主内核 vm.max_map_count ≥ 262144（run-all.sh 会经 colima ssh 尽力设置）
+services:
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
+    container_name: eslab-es01
+    ports:
+      - "9200:9200"
+    environment:
+      - node.name=eslab-es01
+      - cluster.name=eslab
+      - discovery.seed_hosts=eslab-es01,eslab-es02,eslab-es03
+      - cluster.initial_master_nodes=eslab-es01,eslab-es02,eslab-es03
+      - bootstrap.memory_lock=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=2s' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+
+  es02:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
+    container_name: eslab-es02
+    environment:
+      - node.name=eslab-es02
+      - cluster.name=eslab
+      - discovery.seed_hosts=eslab-es01,eslab-es02,eslab-es03
+      - cluster.initial_master_nodes=eslab-es01,eslab-es02,eslab-es03
+      - bootstrap.memory_lock=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=2s' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+
+  es03:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
+    container_name: eslab-es03
+    environment:
+      - node.name=eslab-es03
+      - cluster.name=eslab
+      - discovery.seed_hosts=eslab-es01,eslab-es02,eslab-es03
+      - cluster.initial_master_nodes=eslab-es01,eslab-es02,eslab-es03
+      - bootstrap.memory_lock=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=2s' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
