@@ -51,11 +51,13 @@ jobs:
               - 'dubbo-demo/**'              # Dubbo 分布式 RPC 机制验证实验室 (Maven + JDK 21)
               - 'mq-demo/**'                 # MQ 消息中间件机制验证实验室 (Maven + JDK 21)
               - 'es-demo/**'                 # ES Elasticsearch 机制验证实验室 (Maven + JDK 21)
+              - 'ddd-demo/**'                # DDD 领域建模与架构决策验证实验室 (Maven + JDK 21)
               - 'scripts/verify-jdk21-demos.sh'
               - 'scripts/verify-springboot-demos.sh'
               - 'scripts/verify-dubbo-demos.sh'
               - 'scripts/verify-mq-demos.sh'
               - 'scripts/verify-es-demos.sh'
+              - 'scripts/verify-ddd-demos.sh'
             cpp20:
               - 'virtual-memory-demo/**'
               - 'scripts/verify-cpp20-demos.sh'
@@ -226,6 +228,31 @@ jobs:
         run: |
           chmod +x scripts/verify-es-demos.sh
           ./scripts/verify-es-demos.sh
+
+  # =========================================================================
+  # 阶段 2 - 专区 B7: DDD 验证矩阵 (ddd-demo: 领域建模与架构决策验证)
+  # 编译 + EX-01~07 全链路冒烟（聚合不变量 / ACL 翻译 / ArchUnit 边界 /
+  # Outbox 幂等重试 / 契约演进 / 选型矩阵），零中间件依赖，随 java21 路径过滤器联动
+  # =========================================================================
+  verify-ddd:
+    needs: detect-changes
+    if: ${{ github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || needs.detect-changes.outputs.java21 == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 拉取 dev-lab 源码
+        uses: actions/checkout@v4
+
+      - name: ☕ 设置 JDK 21 + Maven 缓存
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: 🏛️ 执行 DDD 专区公审 (编译 + EX-01~07 冒烟)
+        run: |
+          chmod +x scripts/verify-ddd-demos.sh
+          ./scripts/verify-ddd-demos.sh
 
   # =========================================================================
   # 阶段 2 - 专区 C: C++20 验证矩阵 (virtual-memory-demo: 虚拟内存硬核验证)
