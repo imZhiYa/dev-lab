@@ -59,10 +59,12 @@ public final class Ex04RecommendationChainDemo {
         c.checkEq("兜底是热门商品", "popular:1001", r3.items().get(0));
         ranker.setAvailable(true);
 
-        // 4. 特征不可用 -> 零特征降级（仍走正常决策，非兜底）
+        // 4. 特征不可用 -> 零特征降级：personalizationAllowed=false，个性化商品被领域剔除，仍非兜底
         features.setAvailable(false);
         RecommendationResult r4 = handler.get("u-1001", "home-feed");
-        c.check("特征不可用不抛异常", r4 != null);
+        c.check("特征不可用 -> 降级为零特征（无 personalized 商品）",
+                r4.items().stream().noneMatch(i -> i.startsWith("personalized:")));
+        c.check("特征不可用 -> 仍走正常决策非兜底", !r4.fallback());
         features.setAvailable(true);
 
         // 5. 无策略视图：fallback 视图 + 正常决策

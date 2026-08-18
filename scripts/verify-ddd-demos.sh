@@ -1,3 +1,4 @@
+#!/bin/bash
 # =============================================================================
 # dev-lab DDD 专区公审引擎 (DDD Verification Engine)
 # 编译 + EX-01~07 全部纯逻辑实验（聚合不变量 / ACL 翻译 / ArchUnit 边界 /
@@ -20,8 +21,9 @@ mvn -q compile
 
 echo "🧪 [2/2] EX-01~07 全链路冒烟（聚合规则 / ACL / 架构边界 / 降级 / Outbox 幂等）..."
 for n in 01 02 03 04 05 06 07; do
-  OUT=$(bash scripts/run-ex.sh "$n" 2>&1)
+  # || true：set -e 下命令替换失败会静默退出，必须先把输出吐出来再断言（否则 CI 只见 exit 1）
+  OUT=$(bash scripts/run-ex.sh "$n" 2>&1) || true
+  echo "$OUT"
   assert_contains "$OUT" "失败 0" "EX-$n"
 done
-echo "$OUT"
 echo "✅ DDD 专区公审通过（EX-01~07 全部 失败 0）"

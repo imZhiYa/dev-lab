@@ -33,12 +33,16 @@ public final class Ex02AclTranslationDemo {
         c.check("丢弃原因被记录", counter.reasons().get(0).contains("illegal:tag"));
 
         // 2. 快照版本号是画像自己的追踪字段，ACL 不搬（本地模型没有这个字段）
-        //    —— 构造一个不同 snapshotVersion 的快照，翻译结果与 v7 完全等价
+        //    —— 反射检查 record 组件集，证明本地模型根本没有 snapshotVersion 字段
+        boolean noSnapshotField = java.util.Arrays.stream(RecommendationFeatures.class.getRecordComponents())
+                .noneMatch(rc -> rc.getName().equals("snapshotVersion"));
+        c.check("本地模型不包含 snapshotVersion 字段", noSnapshotField);
+        //    不同 snapshotVersion 翻译结果必须完全等价
         FeatureSnapshotContract v8 = new FeatureSnapshotContract(
                 "u-1001", 8L, true, Set.of("electronics", "photography")
         );
         RecommendationFeatures f8 = acl.translate(v8);
-        c.checkEq("snapshotVersion 不进入本地模型", features.interests(), f8.interests());
+        c.checkEq("不同 snapshotVersion 翻译结果等价", features.interests(), f8.interests());
 
         // 3. 外部脏数据不崩溃：全量非法标签也只得到空兴趣集
         FeatureSnapshotContract dirty = new FeatureSnapshotContract(
