@@ -51,7 +51,7 @@ bash scripts/run-all.sh
 bash ../scripts/verify-ddd-demos.sh
 ```
 
-环境：JDK 21（run.sh 自动经 `/usr/libexec/java_home` 探测）、Maven。
+环境：JDK 21（Azul/Temurin 均可，run.sh 自动探测）、Maven。
 
 ## 模拟边界（诚实声明，禁止外推）
 
