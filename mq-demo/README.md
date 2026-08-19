@@ -23,7 +23,7 @@ _知识库讲原理与因果链，这里负责让"机制真的发生"：吞吐�
 
 | 依赖 | 版本 |
 |---|---|
-| JDK | 21（`/usr/libexec/java_home -v 21` 自动探测，Azul/Temurin 均可） |
+| JDK | 21（Azul/Temurin 均可） |
 | Maven | 3.8+ |
 | Docker | colima（4C/8G 推荐；2C/4G 可跑但吞吐量级受限） |
 | 中间件 | Kafka 3.5.2 / MySQL 8.4 / Redis 7 / RabbitMQ 3.13（compose 编排，固定文章基线） |

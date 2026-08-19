@@ -24,7 +24,7 @@ _知识库讲原理与因果链，这里负责让"机制真的发生"：批量�
 
 | 依赖 | 版本 |
 |---|---|
-| JDK | 21（`/usr/libexec/java_home -v 21` 自动探测，Azul/Temurin 均可） |
+| JDK | 21（Azul/Temurin 均可） |
 | Maven | 3.8+ |
 | Docker | colima（4C/8G 推荐；3 节点各 512m 堆） |
 | 中间件 | Elasticsearch 8.15.3 × 3 节点（compose 编排，固定知识库实验基线；security off，仅本地 lab） |
