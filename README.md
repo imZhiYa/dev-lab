@@ -40,19 +40,19 @@ _知识库讲原理，这里写代码验证_
 
 | 领域入口 | 核心验证重点摘要 |
 |---|---|
-| 🐬 **[Database · MySQL InnoDB 推演](innodb-demo/README.md)** | B+树路标寻址、Page二分槽、MVCC底层判定、Next-Key防幻读死等、环形日志与Doublewrite防撕裂页。 |
+| 🐬 **[Database · MySQL InnoDB 推演](innodb-demo/src/main/java/com/zhiya/innodb/README.md)** | B+树路标寻址、Page二分槽、MVCC底层判定、Next-Key防幻读死等、环形日志与Doublewrite防撕裂页。 |
 | 🔥 **[Cache · Redis 深度解析](redis-demo/src/java/main/com/zhiya/redis/README.md)** | 9 层认知墙：介质墙、单线程事件循环、type×encoding、过期淘汰、RDB/AOF、复制哨兵、16384 槽位、gossip 选举、Stream/HLL；另含 15 坑、25 自测、10 决策卡。 |
-| 🌳 **[Tree · 顶级树形数据结构](tree-demo/README.md)** | BST删除、红黑树自平衡旋转、并发跳表(SkipList)多级跃迁、B树/B+树的分裂与扇出机制。 |
-| 🔴 **[AQS · 同步器与并发原语](aqs-demo/README.md)** | 12 个底层实验。CAS竞态、CLH双向队列结构、Condition挂起、以及 JUC 倒计数与循环栅栏协同。 |
-| 📦 **[Collection · 集合框架深度验证](collection-demo/README.md)** | `subList` 内存泄漏、HashMap树化与哈希冲突复现、COW代价验证、并发安全的错误用法重现。 |
+| 🌳 **[Tree · 顶级树形数据结构](tree-demo/src/main/java/com/zhiya/tree/README.md)** | BST删除、红黑树自平衡旋转、并发跳表(SkipList)多级跃迁、B树/B+树的分裂与扇出机制。 |
+| 🔴 **[AQS · 同步器与并发原语](aqs-demo/src/main/java/com/zhiya/aqs/README.md)** | 12 个底层实验。CAS竞态、CLH双向队列结构、Condition挂起、以及 JUC 倒计数与循环栅栏协同。 |
+| 📦 **[Collection · 集合框架深度验证](collection-demo/src/main/java/com/zhiya/collection/README.md)** | `subList` 内存泄漏、HashMap树化与哈希冲突复现、COW代价验证、并发安全的错误用法重现。 |
 | ☕ **[JVM · 运行机制与 OOM 现场](jvm-demo/README.md)** | 手写复现各数据区 OOM 现场 (Metaspace/Heap/直接内存)、JOL对象头打印、锁升级路线重演。 |
-| 🧵 **[Thread · 线程池与调优](thread-demo/README.md)** | `ThreadPoolExecutor` 拒绝与队列打爆实战、手搓背压流控、**JDK 21 虚拟线程**十万级并发实测。 |
+| 🧵 **[Thread · 线程池与调优](thread-demo/src/main/java/com/zhiya/README.md)** | `ThreadPoolExecutor` 拒绝与队列打爆实战、手搓背压流控、**JDK 21 虚拟线程**十万级并发实测。 |
 | 🌐 **[Network · 高性能网络编程](network-demo/src/java/main/com/zhiya/network/README.md)** | BIO 线程陪等、NIO 忙轮询与 Selector readiness、半包粘包、部分写 / `OP_WRITE`、Reactor 状态 owner、ACK / drain 与 AIO completion。 |
 | ⚡ **[Benchmark · JMH 工业级基准](benchmarks/README.md)** | 12 个微基准战。位运算、集合与并发结构对抗；新增 BIO 阻塞式 Echo vs NIO Selector Echo 的固定连接 loopback 对照。 |
-| 📐 **[Binary · 位运算实战](binary-demo/README.md)** | 布隆过滤器防穿透、一致性哈希环防倾斜、Base32 GeoHash、以及位运算在订单状态机中的压缩重现。 |
+| 📐 **[Binary · 位运算实战](binary-demo/src/main/java/com/zhiya/binary/README.md)** | 布隆过滤器防穿透、一致性哈希环防倾斜、Base32 GeoHash、以及位运算在订单状态机中的压缩重现。 |
 | 🧠 **[Memory · 虚拟内存与 OS (C++20)](virtual-memory-demo/README.md)** | ASLR基址、Base+Limit段错误、TLB容量耗尽、按需调页三闸门(RSS/minflt)实证与写时复制(COW)。 |
 | 🍃 **[SpringBoot · 机制验证实验室](springboot-demo/README.md)** | SpringBoot 3.3.5 十九组实验：手写 IoC、事件、自动装配、Web 双跑法(SERVLET/REACTIVE)、事务、AOP、优雅停机、启动慢排查(JFR/BufferingStartup)。 |
-| 🧭 **[Dubbo · 分布式 RPC 机制验证实验室](dubbo-demo/README.md)** | Dubbo 3.3.4 十一组实验：调用链 E00、序列化盒 E01、Nacos 注册中心 E03-E06、线程模型 E07、SPI 机制 E09、Mock 降级 E10。 |
+| 🧭 **[Dubbo · 分布式 RPC 机制验证实验室](dubbo-demo/README.md)** | Dubbo 3.3.4 十二组实验：调用链 E00、序列化盒 E01/E02、Nacos 注册中心 E03-E06、ZK 锁 E04b、线程模型 E07/E08、SPI 机制 E09、Mock 降级 E10。 |
 | 📨 **[MQ · 消息中间件机制验证实验室](mq-demo/README.md)** | Kafka 3.5 六组实验：acks 确认代价、批量消费与 interval 被踢、幂等三方案与 Redis 淘汰泄漏、积压公式校准、乱序补偿与活锁、CQv1 vs CQv2 存储形态。 |
 | 🔎 **[ES · Elasticsearch 机制验证实验室](es-demo/README.md)** | ES 8.15.3 六组实验：bulk 批量摊薄曲线、refresh 可见性一拍、副本复制代价、深分页候选放大与 search_after、filter vs query 算分上下文、cardinality 精度与代价。 |
 | 🔀 **[Sharding · 分库分表机制验证实验室](sharding-demo/README.md)** | ShardingSphere-JDBC 5.4.1 七组实验 + 冒烟：分片键分布（连续 vs 雪花低速率）、路由与广播、AVG/IN 改写、翻页代价与 keyset、跨片 JOIN 静默丢数据实录、扩容搬迁比例 gcd 实证、连接预算按库不按片。 |
