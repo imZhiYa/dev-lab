@@ -1,0 +1,20 @@
+# 分布式事务机制验证实验室 - MySQL 编排（仅本地实验，down -v 后测试数据全部销毁）
+# 拓扑：单容器 3 database（order_db / inventory_db / payment_db）—— 系列基线「下单请求 B 的三库」，
+#   与 sharding-demo 同思路（物理实例 1、逻辑库 3），连接按「库」独立建池（物化 L1 本地事务边界）
+# 版本固定文章基线：MySQL 8.0.36（XA PREPARE/RECOVER、唯一键冲突、条件 UPDATE 按此版本实测）
+# 注意：root/root 口令仅为本地 lab 沙箱使用（端口 3308 仅绑定本机），非任何真实环境凭据
+services:
+  mysql-dtx:
+    image: mysql:8.0.36
+    container_name: dtx-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3308:3306"
+    volumes:
+      - ./init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
