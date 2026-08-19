@@ -51,12 +51,14 @@ jobs:
               - 'dubbo-demo/**'              # Dubbo 分布式 RPC 机制验证实验室 (Maven + JDK 21)
               - 'mq-demo/**'                 # MQ 消息中间件机制验证实验室 (Maven + JDK 21)
               - 'es-demo/**'                 # ES Elasticsearch 机制验证实验室 (Maven + JDK 21)
+              - 'sharding-demo/**'           # ShardingSphere 分库分表机制验证实验室 (Maven + JDK 21)
               - 'ddd-demo/**'                # DDD 领域建模与架构决策验证实验室 (Maven + JDK 21)
               - 'scripts/verify-jdk21-demos.sh'
               - 'scripts/verify-springboot-demos.sh'
               - 'scripts/verify-dubbo-demos.sh'
               - 'scripts/verify-mq-demos.sh'
               - 'scripts/verify-es-demos.sh'
+              - 'scripts/verify-sharding-demos.sh'
               - 'scripts/verify-ddd-demos.sh'
             cpp20:
               - 'virtual-memory-demo/**'
@@ -253,6 +255,31 @@ jobs:
         run: |
           chmod +x scripts/verify-ddd-demos.sh
           ./scripts/verify-ddd-demos.sh
+
+  # =========================================================================
+  # 阶段 2 - 专区 B8: Sharding 验证矩阵 (sharding-demo: ShardingSphere 5.4.1 机制验证)
+  # 编译 + ShardingSmokeApp 纯逻辑冒烟（gcd 搬迁公式 / 同余判据 / 路由片数 / 翻页下推，零中间件）
+  # EX-01~07 依赖 docker 容器（MySQL 4 库），CI 跳过（本地跑法见 sharding-demo/README.md）
+  # =========================================================================
+  verify-sharding:
+    needs: detect-changes
+    if: ${{ github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || needs.detect-changes.outputs.java21 == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 拉取 dev-lab 源码
+        uses: actions/checkout@v4
+
+      - name: ☕ 设置 JDK 21 + Maven 缓存
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: 🔀 执行 Sharding 专区公审 (编译 + ShardingSmokeApp 冒烟)
+        run: |
+          chmod +x scripts/verify-sharding-demos.sh
+          ./scripts/verify-sharding-demos.sh
 
   # =========================================================================
   # 阶段 2 - 专区 C: C++20 验证矩阵 (virtual-memory-demo: 虚拟内存硬核验证)

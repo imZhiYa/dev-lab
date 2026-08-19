@@ -55,6 +55,7 @@ _知识库讲原理，这里写代码验证_
 | 🧭 **[Dubbo · 分布式 RPC 机制验证实验室](dubbo-demo/README.md)** | Dubbo 3.3.4 十一组实验：调用链 E00、序列化盒 E01、Nacos 注册中心 E03-E06、线程模型 E07、SPI 机制 E09、Mock 降级 E10。 |
 | 📨 **[MQ · 消息中间件机制验证实验室](mq-demo/README.md)** | Kafka 3.5 六组实验：acks 确认代价、批量消费与 interval 被踢、幂等三方案与 Redis 淘汰泄漏、积压公式校准、乱序补偿与活锁、CQv1 vs CQv2 存储形态。 |
 | 🔎 **[ES · Elasticsearch 机制验证实验室](es-demo/README.md)** | ES 8.15.3 六组实验：bulk 批量摊薄曲线、refresh 可见性一拍、副本复制代价、深分页候选放大与 search_after、filter vs query 算分上下文、cardinality 精度与代价。 |
+| 🔀 **[Sharding · 分库分表机制验证实验室](sharding-demo/README.md)** | ShardingSphere-JDBC 5.4.1 七组实验 + 冒烟：分片键分布（连续 vs 雪花低速率）、路由与广播、AVG/IN 改写、翻页代价与 keyset、跨片 JOIN 静默丢数据实录、扩容搬迁比例 gcd 实证、连接预算按库不按片。 |
 | 🏛️ **[DDD · 领域建模与架构决策验证实验室](ddd-demo/README.md)** | DDD 七组实验：聚合不变量与状态机、ACL 契约翻译、ArchUnit 上下文隔离、全链路降级、Outbox 幂等重试、契约演进、核心子域选型矩阵（与 knowledge/ddd 系列文章配套）。 |
 
 ---

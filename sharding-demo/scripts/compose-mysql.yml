@@ -1,0 +1,23 @@
+# 单容器 4 database 拓扑：一个 MySQL 8.0 实例承载 ds0~ds3 四个库
+# 说明：连接预算按"物理库"计算（每实例对每库一个连接池），与实例数无关——
+# 4 库单容器与 4 实例各 1 库在 ShardingSphere 视角等价（4 个数据源）
+# 注意：root/root 与 shard 口令仅为本地 lab 沙箱使用（端口 3307 仅绑定本机），非任何真实环境凭据
+services:
+  mysql-sharding:
+    image: mysql:8.0.36
+    container_name: sharding-mysql
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --log-bin=mysql-bin
+      - --binlog-format=ROW
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
