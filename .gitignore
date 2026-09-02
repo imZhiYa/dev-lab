@@ -16,6 +16,9 @@ buildNumber.properties
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
 
+# Java 编译产物（README 指导就地 javac 编译时产生）
+*.class
+
 # IDE local configs (contain user-specific paths)
 .idea/
 .DS_Store

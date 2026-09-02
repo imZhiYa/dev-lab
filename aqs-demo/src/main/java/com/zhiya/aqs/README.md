@@ -2,7 +2,7 @@
 
 本模块对应知识库深水区文档，硬核拆解 JUC 包下最核心的地基——**AbstractQueuedSynchronizer (AQS)** 及其衍生的各类锁与并发同步器。
 
-这里是整个 Java 并发编程的心脏地带，通过这 12 个分级代码实验，我们将层层剥开 AQS 的黑盒。
+这里是整个 Java 并发编程的心脏地带，通过这 13 个分级代码实验，我们将层层剥开 AQS 的黑盒。
 
 ## 🧪 实验模块与能力矩阵
 
@@ -20,6 +20,7 @@
 | `CyclicBarrierDemo.java` | JUC 原语 | 循环栅栏：如何让一批线程互相等待，并且具备异常破损（Broken）的连锁反应机制。 |
 | `PhaserDemo.java` | JUC 原语 | 超级动态栅栏：展示多阶段（Phase）递进、线程自由中途加入和退出的高阶协同。 |
 | `SemaphoreDemo.java` | JUC 原语 | 控制并发度的令牌桶：演示批量抢占 (`acquire(n)`)、公平性以及并发限流策略。 |
+| `CompletableFutureAllOfDemo.java` | JUC 原语 | `allOf` 等待 100+ 任务偶现 StackOverflowError 的归因实验：对照组证伪"allOf 建链爆栈"（平衡树 O(log n) + `postComplete` 迭代式传播），真正爆点是递归型任务（回调递归 fan-out / 业务递归跑池线程），并演示栈帧重复模式判别法。 |
 
 ## 🚀 运行方式
 

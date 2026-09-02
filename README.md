@@ -43,7 +43,7 @@ _知识库讲原理，这里写代码验证_
 | 🐬 **[Database · MySQL InnoDB 推演](innodb-demo/src/main/java/com/zhiya/innodb/README.md)** | B+树路标寻址、Page二分槽、MVCC底层判定、Next-Key防幻读死等、环形日志与Doublewrite防撕裂页。 |
 | 🔥 **[Cache · Redis 深度解析](redis-demo/src/java/main/com/zhiya/redis/README.md)** | 9 层认知墙：介质墙、单线程事件循环、type×encoding、过期淘汰、RDB/AOF、复制哨兵、16384 槽位、gossip 选举、Stream/HLL；另含 15 坑、25 自测、10 决策卡。 |
 | 🌳 **[Tree · 顶级树形数据结构](tree-demo/src/main/java/com/zhiya/tree/README.md)** | BST删除、红黑树自平衡旋转、并发跳表(SkipList)多级跃迁、B树/B+树的分裂与扇出机制。 |
-| 🔴 **[AQS · 同步器与并发原语](aqs-demo/src/main/java/com/zhiya/aqs/README.md)** | 12 个底层实验。CAS竞态、CLH双向队列结构、Condition挂起、以及 JUC 倒计数与循环栅栏协同。 |
+| 🔴 **[AQS · 同步器与并发原语](aqs-demo/src/main/java/com/zhiya/aqs/README.md)** | 13 个底层实验。CAS竞态、CLH双向队列结构、Condition挂起、JUC 倒计数与循环栅栏协同，以及 CompletableFuture allOf 偶现 StackOverflowError 的归因与复现。 |
 | 📦 **[Collection · 集合框架深度验证](collection-demo/src/main/java/com/zhiya/collection/README.md)** | `subList` 内存泄漏、HashMap树化与哈希冲突复现、COW代价验证、并发安全的错误用法重现。 |
 | ☕ **[JVM · 运行机制与 OOM 现场](jvm-demo/README.md)** | 手写复现各数据区 OOM 现场 (Metaspace/Heap/直接内存)、JOL对象头打印、锁升级路线重演。 |
 | 🧵 **[Thread · 线程池与调优](thread-demo/src/main/java/com/zhiya/README.md)** | `ThreadPoolExecutor` 拒绝与队列打爆实战、手搓背压流控、**JDK 21 虚拟线程**十万级并发实测。 |
