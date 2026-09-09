@@ -42,8 +42,7 @@ cd sharding-demo
 docker compose -f scripts/compose-mysql.yml up -d
 bash scripts/run-all.sh
 
-# 只跑某一个
-bash scripts/run-ex03.sh   # 见 scripts/run-all.sh 内命令，或直接
+# 只跑某一个（例如 EX-03）
 ./run.sh com.zhiya.sharding.experiment.Ex03Rewrite
 
 # 纯逻辑冒烟（零中间件，几秒，CI 同款）
